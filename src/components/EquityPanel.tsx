@@ -6,11 +6,9 @@ import {
   AreaChart,
   Bar,
   BarChart,
-  Brush,
   CartesianGrid,
   Cell,
   ComposedChart,
-  LineChart,
   ReferenceArea,
   ReferenceDot,
   ReferenceLine,
@@ -23,6 +21,7 @@ import type { Overview } from '../lib/stats'
 import { formatDate, formatR, rClass, type Trade } from '../lib/trades'
 import { themeColors } from '../lib/theme'
 import { Segmented } from './Segmented'
+import { RangeSlider } from './RangeSlider'
 
 // Un point du graphique : le point de départ (trade 0, à 0 R) n'a pas de trade.
 type ChartPoint = { index: number; cumR: number; drawdown: number; r: number; trade?: Trade }
@@ -43,7 +42,6 @@ export function EquityPanel({
   stats,
   zoom,
   highlight,
-  navigatorVersion,
   onZoomChange,
   onReset,
   panelRef,
@@ -51,13 +49,13 @@ export function EquityPanel({
   stats: Overview
   zoom: Zoom | null
   highlight: Highlight | null
-  navigatorVersion: number // change quand le zoom est imposé de l'extérieur, pour replacer la barre de zoom
   onZoomChange: (zoom: Zoom | null) => void
   onReset: () => void
   panelRef: Ref<HTMLDivElement>
 }) {
   const [view, setView] = useState<View>('curve')
   const [showStreaks, setShowStreaks] = useState(true)
+  const [sliding, setSliding] = useState(false)
   const navigate = useNavigate()
   const { search } = useLocation()
   const c = themeColors()
@@ -67,7 +65,7 @@ export function EquityPanel({
   const visible = data.slice(range.start, range.end + 1)
   const visibleTrades = visible.filter((p) => p.trade)
   // Animation au premier affichage et au retour à la vue complète ; pendant un zoom, la courbe suit sans délai.
-  const animate = zoom === null
+  const animate = zoom === null && !sliding
 
   // Le clic vise le trade de la bulle d'info : pas besoin de toucher le point exactement.
   const openTradeAt = (points: ChartPoint[]) => (state: { activeTooltipIndex?: number | string | null }) => {
@@ -84,14 +82,16 @@ export function EquityPanel({
   }
   // Étiquette du sommet à gauche du point quand il est au bord droit, pour ne pas être coupée.
   const peakNearEnd = stats.peak !== null && stats.peak.index > range.end - 3
-  const trough = stats.drawdownRange ? stats.curve[stats.drawdownRange.to - 1] : null
+  // Point le plus bas de la plus forte baisse ; pas d'étiquette s'il est collé au bord gauche (elle chevaucherait l'axe).
+  const troughPoint = stats.drawdownRange ? stats.curve[stats.drawdownRange.to - 1] : null
+  const trough = troughPoint && troughPoint.index > range.start ? troughPoint : null
 
   return (
     <div className="panel equity-panel" ref={panelRef}>
       <div className="panel-header">
         <div>
           <h3>R cumulés</h3>
-          <p className="muted">Clique sur un point pour ouvrir la fiche du trade. Glisse la barre du bas pour zoomer.</p>
+          <p className="muted">Clique sur un point pour ouvrir la fiche du trade. Glisse les poignées de la barre du bas pour zoomer (double-clic : toute la période).</p>
         </div>
         <div className="toolbar">
           <Segmented id="equity-view" label="Affichage" options={VIEWS} value={view} onChange={setView} />
@@ -156,7 +156,7 @@ export function EquityPanel({
           role="img"
           aria-label={view === 'curve' ? 'Courbe des R cumulés, trade par trade' : 'R de chaque trade'}
         >
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer width="100%" height={380}>
             {view === 'curve' ? (
               <ComposedChart
                 data={visible}
@@ -168,8 +168,13 @@ export function EquityPanel({
               >
                 <defs>
                   <linearGradient id="equity-fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={c.electric} stopOpacity={0.35} />
+                    <stop offset="0%" stopColor={c.violet} stopOpacity={0.35} />
+                    <stop offset="60%" stopColor={c.electric} stopOpacity={0.12} />
                     <stop offset="100%" stopColor={c.electric} stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="equity-stroke" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor={c.electric} />
+                    <stop offset="100%" stopColor={c.violet} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke={c.grid} strokeDasharray="3 3" vertical={false} />
@@ -190,10 +195,10 @@ export function EquityPanel({
                   <ReferenceArea
                     x1={highlight.x1}
                     x2={highlight.x2}
-                    stroke={c.electric}
+                    stroke={c.violet}
                     strokeDasharray="4 4"
-                    fill={c.electric}
-                    fillOpacity={0.08}
+                    fill={c.violet}
+                    fillOpacity={0.1}
                     ifOverflow="hidden"
                   />
                 )}
@@ -202,8 +207,8 @@ export function EquityPanel({
                 <Area
                   type="linear"
                   dataKey="cumR"
-                  stroke={c.electric}
-                  strokeWidth={2}
+                  stroke="url(#equity-stroke)"
+                  strokeWidth={2.5}
                   fill="url(#equity-fill)"
                   isAnimationActive={animate}
                   animationDuration={900}
@@ -213,7 +218,7 @@ export function EquityPanel({
                     const fill = payload.r > 0 ? c.gain : payload.r < 0 ? c.loss : c.muted
                     return <circle key={index} cx={cx} cy={cy} r={4} fill={fill} stroke={c.navy} strokeWidth={2} />
                   }}
-                  activeDot={{ r: 7, fill: c.electric, stroke: c.navy, strokeWidth: 2 }}
+                  activeDot={{ r: 7, fill: c.violet, stroke: c.navy, strokeWidth: 2 }}
                 />
                 {stats.peak && stats.peak.cumR > 0 && (
                   <ReferenceDot
@@ -297,31 +302,15 @@ export function EquityPanel({
         </ResponsiveContainer>
       </div>
 
-      <div className="navigator">
-        <ResponsiveContainer width="100%" height={44}>
-          <LineChart data={data} margin={{ top: 0, right: 16, bottom: 0, left: 52 }}>
-            <Brush
-              key={navigatorVersion}
-              dataKey="index"
-              height={40}
-              startIndex={range.start}
-              endIndex={range.end}
-              travellerWidth={10}
-              stroke={c.electric}
-              fill={c.black}
-              tickFormatter={(v: number) => (v === 0 ? 'Départ' : `n°${v}`)}
-              onChange={({ startIndex, endIndex }) => {
-                if (startIndex === undefined || endIndex === undefined) return
-                onZoomChange(startIndex === 0 && endIndex === data.length - 1 ? null : { start: startIndex, end: endIndex })
-              }}
-            >
-              <AreaChart data={data}>
-                <Area dataKey="cumR" stroke={c.muted} fill={c.grid} isAnimationActive={false} dot={false} />
-              </AreaChart>
-            </Brush>
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <RangeSlider
+        values={data.map((p) => p.cumR)}
+        start={range.start}
+        end={range.end}
+        onChange={(start, end) => onZoomChange(start === 0 && end === data.length - 1 ? null : { start, end })}
+        onReset={onReset}
+        onDragChange={setSliding}
+        formatLabel={(v) => (v === 0 ? 'Départ' : `n°${v}`)}
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-/* Thème R Ledger : bleu marine, bleu électrique, noir. */
+/* Thème R Ledger : bleu marine, bleu électrique, noir, avec un accent mauve électrique. */
 :root {
   --black: #05070d;
   --navy: #0b1730;
@@ -6,6 +6,9 @@
   --electric: #2f7dff;
   --electric-hover: #5a98ff;
   --electric-glow: rgb(47 125 255 / 0.35);
+  --violet: #a855f7;
+  --violet-glow: rgb(168 85 247 / 0.35);
+  --accent-gradient: linear-gradient(135deg, var(--electric), var(--violet));
   --text: #e6ecf8;
   --muted: #8a9bbd;
   --gain: #22c55e;
@@ -28,7 +31,7 @@ body {
   background: var(--black);
 }
 
-/* Halo de lumière bleue qui dérive lentement derrière la page. */
+/* Halos de lumière bleue et mauve qui dérivent lentement derrière la page. */
 body::before {
   content: '';
   position: fixed;
@@ -36,6 +39,7 @@ body::before {
   z-index: -1;
   background:
     radial-gradient(circle at 20% 10%, rgb(47 125 255 / 0.16), transparent 40%),
+    radial-gradient(circle at 90% 70%, rgb(168 85 247 / 0.13), transparent 40%),
     radial-gradient(circle at 85% 30%, rgb(19 36 74 / 0.9), transparent 45%),
     radial-gradient(circle at 50% 100%, rgb(11 23 48 / 0.9), transparent 50%);
   animation: drift 24s ease-in-out infinite alternate;
@@ -208,9 +212,9 @@ button.small {
   height: 1.6em;
   font-weight: 800;
   color: #fff;
-  background: linear-gradient(135deg, var(--electric), #1b3f8f);
+  background: var(--accent-gradient);
   border-radius: 8px;
-  box-shadow: 0 0 16px var(--electric-glow);
+  box-shadow: 0 0 16px var(--electric-glow), 0 0 24px var(--violet-glow);
 }
 
 /* --- Barre du haut et navigation --- */
@@ -273,9 +277,9 @@ button.small {
 .nav-pill {
   position: absolute;
   inset: 0;
-  background: var(--navy-light);
+  background: linear-gradient(135deg, rgb(47 125 255 / 0.22), rgb(168 85 247 / 0.22)), var(--navy-light);
   border-radius: 8px;
-  box-shadow: inset 0 -2px 0 var(--electric), 0 0 16px rgb(47 125 255 / 0.15);
+  box-shadow: inset 0 -2px 0 var(--violet), 0 0 16px rgb(168 85 247 / 0.2);
 }
 
 .nav-label {
@@ -300,9 +304,9 @@ button.small {
 
 /* --- Page --- */
 .page {
-  max-width: 1160px;
+  max-width: 1880px;
   margin: 0 auto;
-  padding: 28px 16px 64px;
+  padding: 28px clamp(16px, 3vw, 40px) 64px;
 }
 
 .page-content,
@@ -332,7 +336,10 @@ button.small {
   gap: 24px;
   padding: 24px;
   overflow: hidden;
-  background: linear-gradient(135deg, rgb(47 125 255 / 0.12), transparent 60%), var(--navy);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(168 85 247 / 0.18), transparent 50%),
+    linear-gradient(135deg, rgb(47 125 255 / 0.14), transparent 60%),
+    var(--navy);
   border: 1px solid var(--navy-light);
   border-radius: 16px;
 }
@@ -379,6 +386,43 @@ button.small {
   }
 }
 
+/* --- Disposition de la vue d'ensemble : courbe à gauche, chiffres à droite --- */
+.overview-main {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(340px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.overview-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.overview-side .tiles {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Carte seule sur la dernière ligne : elle prend toute la largeur. */
+.overview-side .tiles > :last-child:nth-child(odd) {
+  grid-column: span 2;
+}
+
+@media (max-width: 1100px) {
+  .overview-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .overview-side .tiles {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  }
+
+  .overview-side .tiles > :last-child:nth-child(odd) {
+    grid-column: auto;
+  }
+}
+
 /* --- Cartes de chiffres --- */
 .tile-section {
   display: flex;
@@ -393,6 +437,18 @@ button.small {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
+}
+
+/* Petit trait bleu → mauve devant chaque titre de section. */
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  margin-right: 8px;
+  vertical-align: middle;
+  background: var(--accent-gradient);
+  border-radius: 2px;
 }
 
 .tiles {
@@ -417,6 +473,12 @@ button.small {
 .tile:hover {
   border-color: rgb(47 125 255 / 0.5);
   box-shadow: 0 8px 30px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(47 125 255 / 0.15);
+}
+
+/* Une carte sur deux s'illumine en mauve au survol. */
+.tile:nth-child(even):hover {
+  border-color: rgb(168 85 247 / 0.55);
+  box-shadow: 0 8px 30px rgb(0 0 0 / 0.35), 0 0 0 1px rgb(168 85 247 / 0.18), 0 0 24px rgb(168 85 247 / 0.12);
 }
 
 .tile.clickable {
@@ -595,8 +657,8 @@ button.small {
   font-size: 0.8rem;
   font-weight: 600;
   color: #fff;
-  background: rgb(47 125 255 / 0.2);
-  border: 1px solid var(--electric);
+  background: rgb(168 85 247 / 0.2);
+  border: 1px solid var(--violet);
   border-radius: 999px;
 }
 
@@ -631,13 +693,90 @@ button.small {
   font-size: 0.75rem;
 }
 
-.navigator {
-  margin-top: 8px;
+/* --- Barre de zoom sous la courbe --- */
+.range-slider {
+  margin: 14px 16px 0 52px;
+  padding-bottom: 22px;
 }
 
-.navigator text {
-  fill: var(--muted);
+.range-track {
+  position: relative;
+  height: 44px;
+  background: var(--black);
+  border: 1px solid var(--navy-light);
+  border-radius: 8px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.range-preview {
+  position: absolute;
+  inset: 4px 0;
+  width: 100%;
+  height: calc(100% - 8px);
+}
+
+.range-shade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgb(5 7 13 / 0.65);
+  pointer-events: none;
+}
+
+.range-window {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  border: 1px solid var(--violet);
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgb(47 125 255 / 0.12), rgb(168 85 247 / 0.12));
+  box-shadow: 0 0 18px rgb(168 85 247 / 0.2);
+  cursor: grab;
+  transition: box-shadow 0.2s;
+}
+
+.range-track.dragging .range-window {
+  cursor: grabbing;
+  box-shadow: 0 0 26px rgb(168 85 247 / 0.4);
+}
+
+.range-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 30px;
+  background: var(--accent-gradient);
+  border: 2px solid var(--black);
+  border-radius: 6px;
+  box-shadow: 0 0 12px var(--violet-glow);
+  transform: translate(-50%, -50%);
+  cursor: ew-resize;
+  transition: transform 0.15s var(--ease-out), box-shadow 0.15s;
+}
+
+.range-handle:hover,
+.range-track.dragging .range-handle {
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 0 18px var(--violet-glow);
+}
+
+.range-window:focus-visible,
+.range-handle:focus-visible {
+  outline: 2px solid var(--electric-hover);
+  outline-offset: 2px;
+}
+
+.range-handle-label {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
   font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .tooltip {

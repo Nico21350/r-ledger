@@ -6,6 +6,7 @@ export function themeColors() {
     navy: css('--navy'),
     grid: css('--navy-light'),
     electric: css('--electric'),
+    violet: css('--violet'),
     text: css('--text'),
     muted: css('--muted'),
     gain: css('--gain'),

@@ -96,10 +96,10 @@ export function RollingPanel({
               <Line
                 type="monotone"
                 dataKey={metric}
-                stroke={c.electric}
+                stroke={c.violet}
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 6, fill: c.electric, stroke: c.navy, strokeWidth: 2 }}
+                activeDot={{ r: 6, fill: c.violet, stroke: c.navy, strokeWidth: 2 }}
                 animationDuration={700}
               />
             </LineChart>
