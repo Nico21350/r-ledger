@@ -59,7 +59,8 @@ async function sync() {
       .select('id')
       .single()
     if (error) throw error
-    before ? report.updated++ : report.added++
+    if (before) report.updated++
+    else report.added++
 
     const images = await syncImages(trade.id, page.id, blocks.filter((b) => b.type === 'image'))
     report.imagesAdded += images.added
