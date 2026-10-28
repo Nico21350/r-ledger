@@ -118,23 +118,130 @@ button.secondary:hover {
   color: var(--muted);
 }
 
-.big {
-  margin: 8px 0 0;
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--electric);
-}
-
-.report {
-  margin: 0;
-  padding: 12px 16px;
-  list-style: none;
-  background: var(--black);
-  border-radius: 8px;
-  line-height: 1.7;
-}
-
 .error {
   margin: 0;
   color: var(--loss);
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+h3 {
+  margin: 0 0 4px;
+  font-size: 1rem;
+}
+
+.gain {
+  color: var(--gain);
+}
+
+.loss {
+  color: var(--loss);
+}
+
+/* --- Écran principal --- */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: var(--black);
+  border-bottom: 1px solid var(--navy-light);
+}
+
+.topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notice {
+  margin: 0;
+  padding: 10px 14px;
+  background: var(--navy);
+  border-left: 3px solid var(--electric);
+  border-radius: 6px;
+}
+
+.segmented {
+  display: flex;
+  padding: 3px;
+  background: var(--black);
+  border: 1px solid var(--navy-light);
+  border-radius: 8px;
+}
+
+.segmented button {
+  padding: 6px 12px;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+}
+
+.segmented button.active {
+  color: #fff;
+  background: var(--electric);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+  gap: 12px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  background: var(--navy);
+  border: 1px solid var(--navy-light);
+  border-radius: 10px;
+}
+
+.tile strong {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  padding: 20px;
+  background: var(--navy);
+  border: 1px solid var(--navy-light);
+  border-radius: 12px;
+}
+
+.chart {
+  margin-top: 16px;
+}
+
+.tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  background: var(--black);
+  border: 1px solid var(--navy-light);
+  border-radius: 8px;
 }

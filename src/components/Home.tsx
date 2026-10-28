@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
+import type { Trade } from '../lib/trades'
+import { Overview } from './Overview'
 
 type SyncReport = {
   added: number
@@ -11,27 +13,30 @@ type SyncReport = {
   imagesDeleted: number
 }
 
+const TRADE_COLUMNS =
+  'id, instrument, direction, traded_at, has_time, ny_hour, notion_result, rr_closed, outcome, taken'
+
 export function Home({ email }: { email: string }) {
-  const [tradeCount, setTradeCount] = useState<number | null>(null)
+  const [trades, setTrades] = useState<Trade[] | null>(null)
   const [syncing, setSyncing] = useState(false)
   const [report, setReport] = useState<SyncReport | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const loadCount = useCallback(
+  const loadTrades = useCallback(
     () =>
       supabase
         .from('trades')
-        .select('*', { count: 'exact', head: true })
-        .then(({ count, error }) => {
+        .select(TRADE_COLUMNS)
+        .then(({ data, error }) => {
           if (error) setError(error.message)
-          else setTradeCount(count)
+          else setTrades(data as Trade[])
         }),
     [],
   )
 
   useEffect(() => {
-    loadCount()
-  }, [loadCount])
+    loadTrades()
+  }, [loadTrades])
 
   async function handleSync() {
     setSyncing(true)
@@ -44,41 +49,36 @@ export function Home({ email }: { email: string }) {
       setError(body?.error ?? error.message)
     } else {
       setReport(data)
-      await loadCount()
+      await loadTrades()
     }
     setSyncing(false)
   }
 
   return (
-    <main className="center">
-      <section className="card">
-        <header className="row">
-          <h1>R Ledger</h1>
+    <>
+      <header className="topbar">
+        <h1>R Ledger</h1>
+        <div className="topbar-actions">
+          <span className="muted">{email}</span>
+          <button onClick={handleSync} disabled={syncing}>
+            {syncing ? 'Synchronisation…' : 'Synchroniser'}
+          </button>
           <button className="secondary" onClick={() => supabase.auth.signOut()}>
             Se déconnecter
           </button>
-        </header>
-        <p className="muted">Connecté : {email}</p>
+        </div>
+      </header>
 
-        <p className="big">{tradeCount ?? '…'}</p>
-        <p className="muted">trades dans Supabase</p>
-
-        <button onClick={handleSync} disabled={syncing}>
-          {syncing ? 'Synchronisation…' : 'Synchroniser'}
-        </button>
-
+      <main className="page">
         {report && (
-          <ul className="report">
-            <li>{report.added} ajoutés</li>
-            <li>{report.updated} mis à jour</li>
-            <li>{report.unchanged} inchangés</li>
-            <li>{report.deleted} supprimés</li>
-            <li>{report.imagesAdded} captures téléchargées</li>
-            <li>{report.imagesDeleted} captures supprimées</li>
-          </ul>
+          <p className="notice">
+            Synchro terminée : {report.added} ajoutés, {report.updated} mis à jour, {report.unchanged} inchangés,{' '}
+            {report.deleted} supprimés · {report.imagesAdded} captures téléchargées, {report.imagesDeleted} supprimées.
+          </p>
         )}
         {error && <p className="error">{error}</p>}
-      </section>
-    </main>
+        {trades ? <Overview trades={trades} /> : <p className="muted">Chargement…</p>}
+      </main>
+    </>
   )
 }
