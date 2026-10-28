@@ -10,6 +10,16 @@ export function formatR(r: number, digits = 2): string {
   return `${sign}${Math.abs(rounded).toLocaleString('fr-BE', { maximumFractionDigits: digits })} R`
 }
 
+// Nombre sans unité (ratio, SQN…) ; un profit factor sans aucune perte vaut l'infini.
+export function formatNumber(x: number, digits = 2): string {
+  if (x === Infinity) return '∞'
+  return x.toLocaleString('fr-BE', { maximumFractionDigits: digits, minimumFractionDigits: digits })
+}
+
+export function formatPercent(x: number): string {
+  return `${Math.round(x * 100)} %`
+}
+
 export function rClass(r: number): string {
   return r > 0 ? 'gain' : r < 0 ? 'loss' : ''
 }

@@ -5,6 +5,7 @@ import {
   EMPTY_FILTERS,
   parseFilters,
   presetRange,
+  previousRange,
   serializeFilters,
   type Filters,
 } from './filters'
@@ -76,5 +77,25 @@ describe('presetRange', () => {
 
   it('reste dans le bon mois pour les fins de mois', () => {
     expect(presetRange('3m', '2026-05-31').from).toBe('2026-02-28')
+  })
+})
+
+describe('previousRange', () => {
+  it('prend la période de même durée juste avant', () => {
+    expect(previousRange({ ...EMPTY_FILTERS, from: '2026-09-01', to: '2026-09-30' }, '2026-10-28')).toEqual({
+      from: '2026-08-02',
+      to: '2026-08-31',
+    })
+  })
+
+  it("va jusqu'à aujourd'hui sans date de fin", () => {
+    expect(previousRange({ ...EMPTY_FILTERS, from: '2026-10-19' }, '2026-10-28')).toEqual({
+      from: '2026-10-09',
+      to: '2026-10-18',
+    })
+  })
+
+  it("ne compare rien sans date de début", () => {
+    expect(previousRange(EMPTY_FILTERS, '2026-10-28')).toBeNull()
   })
 })

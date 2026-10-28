@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import {
   applyFilters,
   countActiveFilters,
@@ -67,8 +68,17 @@ export function FilterMenu() {
         <span aria-hidden="true">▾</span>
       </button>
 
+      <AnimatePresence>
       {open && (
-        <div className="filter-panel" role="dialog" aria-label="Filtres">
+        <motion.div
+          className="filter-panel"
+          role="dialog"
+          aria-label="Filtres"
+          initial={{ opacity: 0, y: -8, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -8, scale: 0.97 }}
+          transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+        >
           <Section title="Période">
             <div className="chips">
               {PERIOD_PRESETS.map((p) => {
@@ -170,8 +180,9 @@ export function FilterMenu() {
               Réinitialiser
             </button>
           </footer>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -111,6 +111,19 @@ export function presetRange(preset: PeriodPreset, today: string): Pick<Filters, 
   return { from: d.toISOString().slice(0, 10), to: today }
 }
 
+// Période de même durée juste avant la période filtrée, pour comparer.
+// Sans date de début, il n'y a rien à comparer ; sans date de fin, la période va jusqu'à aujourd'hui.
+export function previousRange(filters: Filters, today: string): { from: string; to: string } | null {
+  if (!filters.from) return null
+  const day = 24 * 60 * 60 * 1000
+  const start = Date.parse(`${filters.from}T00:00:00Z`)
+  const end = Date.parse(`${filters.to ?? today}T00:00:00Z`)
+  if (end < start) return null
+  const length = end - start + day
+  const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10)
+  return { from: iso(start - length), to: iso(start - day) }
+}
+
 export function todayInBrussels(): string {
   return brusselsDay(new Date().toISOString())!
 }
