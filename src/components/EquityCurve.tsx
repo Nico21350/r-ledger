@@ -1,3 +1,4 @@
+import { useLocation, useNavigate } from 'react-router'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import type { CurvePoint } from '../lib/stats'
 import { formatDate, formatR, rClass } from '../lib/trades'
@@ -6,6 +7,8 @@ import { formatDate, formatR, rClass } from '../lib/trades'
 const css = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 export function EquityCurve({ points }: { points: CurvePoint[] }) {
+  const navigate = useNavigate()
+  const { search } = useLocation()
   if (!points.length) return <p className="muted">Aucun trade avec un RR closed.</p>
 
   const electric = css('--electric')
@@ -20,7 +23,16 @@ export function EquityCurve({ points }: { points: CurvePoint[] }) {
   return (
     <div className="chart" role="img" aria-label="Courbe des R cumulés, trade par trade">
       <ResponsiveContainer width="100%" height={320}>
-        <LineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
+        <LineChart
+          data={data}
+          margin={{ top: 8, right: 16, bottom: 8, left: 0 }}
+          // Le clic vise le trade le plus proche (celui de la bulle), pas besoin de toucher le point exactement.
+          onClick={(state) => {
+            const point = data[Number(state.activeTooltipIndex)]
+            if (point && 'trade' in point) navigate({ pathname: `/trade/${point.trade.id}`, search })
+          }}
+          style={{ cursor: 'pointer' }}
+        >
           <CartesianGrid stroke={grid} strokeDasharray="3 3" vertical={false} />
           <XAxis
             dataKey="index"

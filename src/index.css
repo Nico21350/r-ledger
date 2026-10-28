@@ -153,6 +153,7 @@ h3 {
   border-bottom: 1px solid var(--navy-light);
 }
 
+.topbar-left,
 .topbar-actions {
   display: flex;
   flex-wrap: wrap;
@@ -181,26 +182,6 @@ h3 {
   background: var(--navy);
   border-left: 3px solid var(--electric);
   border-radius: 6px;
-}
-
-.segmented {
-  display: flex;
-  padding: 3px;
-  background: var(--black);
-  border: 1px solid var(--navy-light);
-  border-radius: 8px;
-}
-
-.segmented button {
-  padding: 6px 12px;
-  font-weight: 500;
-  color: var(--muted);
-  background: transparent;
-}
-
-.segmented button.active {
-  color: #fff;
-  background: var(--electric);
 }
 
 .tiles {
@@ -235,6 +216,16 @@ h3 {
   margin-top: 16px;
 }
 
+/* Le cadre de focus n'apparaît qu'au clavier (Tab), pas au clic de souris. */
+.chart :focus:not(:focus-visible) {
+  outline: none;
+}
+
+.chart :focus-visible {
+  outline: 2px solid var(--electric);
+  outline-offset: 2px;
+}
+
 .tooltip {
   display: flex;
   flex-direction: column;
@@ -244,4 +235,185 @@ h3 {
   background: var(--black);
   border: 1px solid var(--navy-light);
   border-radius: 8px;
+}
+
+a {
+  color: var(--electric-hover);
+}
+
+/* --- Barre du haut et navigation --- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.nav a {
+  padding: 6px 12px;
+  color: var(--muted);
+  text-decoration: none;
+  border-radius: 6px;
+}
+
+.nav a:hover {
+  color: var(--text);
+  background: var(--navy);
+}
+
+.nav a.active {
+  color: var(--text);
+  background: var(--navy-light);
+  box-shadow: inset 0 -2px 0 var(--electric);
+}
+
+/* --- Menu des filtres --- */
+.filter-menu {
+  position: relative;
+}
+
+.filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge {
+  min-width: 20px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--electric);
+  border-radius: 999px;
+}
+
+.filter-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: min(380px, calc(100vw - 32px));
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: var(--navy);
+  border: 1px solid var(--navy-light);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.5);
+}
+
+.filter-section {
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-section legend {
+  margin-bottom: 8px;
+  padding: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: var(--black);
+  border: 1px solid var(--navy-light);
+  border-radius: 999px;
+}
+
+.chip:hover:not(:disabled) {
+  color: var(--text);
+  background: var(--navy-light);
+}
+
+.chip.active {
+  color: #fff;
+  background: var(--electric);
+  border-color: var(--electric);
+}
+
+.dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.filter-footer {
+  padding-top: 12px;
+  border-top: 1px solid var(--navy-light);
+}
+
+/* --- Fiche trade --- */
+.back {
+  align-self: flex-start;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--text);
+}
+
+.trade-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.trade-r {
+  margin-left: auto;
+  font-size: 1.75rem;
+}
+
+.props {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.props dt {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.props dd {
+  margin: 4px 0 0;
+}
+
+.prose {
+  margin: 8px 0 0;
+  white-space: pre-wrap;
+  line-height: 1.6;
 }

@@ -1,36 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { computeOverview } from '../lib/stats'
-import { filterTrades, formatR, rClass, type TakenFilter, type Trade } from '../lib/trades'
+import { formatR, rClass, type Trade } from '../lib/trades'
 import { EquityCurve } from './EquityCurve'
 
-const FILTERS: { value: TakenFilter; label: string }[] = [
-  { value: 'all', label: 'Tous' },
-  { value: 'taken', label: 'Pris' },
-  { value: 'not_taken', label: 'Non pris' },
-]
-
 export function Overview({ trades }: { trades: Trade[] }) {
-  const [filter, setFilter] = useState<TakenFilter>('all')
-  const stats = useMemo(() => computeOverview(filterTrades(trades, filter)), [trades, filter])
+  const stats = useMemo(() => computeOverview(trades), [trades])
 
   return (
     <section className="overview">
-      <div className="row">
-        <h2>Vue d'ensemble</h2>
-        <div className="segmented" role="group" aria-label="Filtrer les trades">
-          {FILTERS.map((f) => (
-            <button
-              key={f.value}
-              className={filter === f.value ? 'active' : ''}
-              aria-pressed={filter === f.value}
-              onClick={() => setFilter(f.value)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
       <div className="tiles">
         <Tile label="Trades" value={String(stats.count)} />
         <Tile label="Total" value={formatR(stats.totalR)} tone={rClass(stats.totalR)} />
@@ -50,7 +27,7 @@ export function Overview({ trades }: { trades: Trade[] }) {
 
       <div className="panel">
         <h3>R cumulés</h3>
-        <p className="muted">Chaque point est un trade, dans l'ordre chronologique.</p>
+        <p className="muted">Chaque point est un trade, dans l'ordre chronologique. Clique sur un point pour ouvrir sa fiche.</p>
         <EquityCurve points={stats.curve} />
       </div>
     </section>

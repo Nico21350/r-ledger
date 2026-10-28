@@ -1,24 +1,7 @@
-// Un trade tel que stocké dans la table Supabase "trades".
-export type Trade = {
-  id: string
-  instrument: string | null
-  direction: string | null
-  traded_at: string | null
-  has_time: boolean
-  ny_hour: string | null
-  notion_result: string | null
-  rr_closed: number | null
-  outcome: 'win' | 'loss' | 'be' | null
-  taken: boolean
-}
+import type { Tables } from './database.types'
 
-export type TakenFilter = 'all' | 'taken' | 'not_taken'
-
-export function filterTrades(trades: Trade[], filter: TakenFilter): Trade[] {
-  if (filter === 'taken') return trades.filter((t) => t.taken)
-  if (filter === 'not_taken') return trades.filter((t) => !t.taken)
-  return trades
-}
+// Un trade tel que stocké dans la table Supabase "trades" (type généré par `npm run types`).
+export type Trade = Tables<'trades'>
 
 // "+1,5 R" / "−1 R" : le signe est toujours écrit, la couleur n'est jamais la seule information.
 export function formatR(r: number, digits = 2): string {
@@ -42,4 +25,10 @@ export function formatDate(trade: Trade): string {
     year: 'numeric',
     ...(trade.has_time && { hour: '2-digit', minute: '2-digit' }),
   })
+}
+
+// Jour calendaire à Bruxelles, au format AAAA-MM-JJ (ex. 2026-05-12).
+export function brusselsDay(iso: string | null): string | null {
+  if (!iso) return null
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Brussels' }).format(new Date(iso))
 }
