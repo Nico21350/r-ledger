@@ -83,3 +83,13 @@ on conflict (id) do nothing;
 drop policy if exists "Lecture captures connecté" on storage.objects;
 create policy "Lecture captures connecté" on storage.objects
   for select to authenticated using (bucket_id = 'captures');
+
+-- Visite automatique (GitHub Actions, .github/workflows/supabase-keepalive.yml) :
+-- évite la mise en pause du projet gratuit. Renvoie seulement l'heure, ne lit aucune table.
+create or replace function public.ping()
+returns timestamptz
+language sql
+stable
+as $$ select now() $$;
+
+grant execute on function public.ping() to anon, authenticated;
