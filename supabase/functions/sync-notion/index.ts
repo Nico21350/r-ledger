@@ -21,10 +21,14 @@ const supabase = createClient(
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
-  // Seul un utilisateur connecté peut lancer la synchronisation.
+  // Seul le propriétaire (secret OWNER_USER_ID) peut lancer la synchronisation ;
+  // tout autre compte connecté, comme le compte démo, est refusé.
   const token = req.headers.get('Authorization')?.replace('Bearer ', '') ?? ''
   const { data: auth } = await supabase.auth.getUser(token)
   if (!auth.user) return json({ error: 'Non connecté' }, 401)
+  const owner = Deno.env.get('OWNER_USER_ID')
+  if (!owner) return json({ error: 'Secret OWNER_USER_ID manquant' }, 500)
+  if (auth.user.id !== owner) return json({ error: 'Réservé au propriétaire : la synchronisation est désactivée en mode démo' }, 403)
 
   try {
     return json(await sync())
