@@ -3,11 +3,12 @@ import { useLocation, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
 import { Area, AreaChart, ResponsiveContainer } from 'recharts'
 import type { CurvePoint, Overview as OverviewStats, Streak } from '../lib/stats'
-import { formatDate, formatNumber, formatPercent, formatR, rClass } from '../lib/trades'
+import { formatDate, formatNumber, formatPercent, formatR, rClass, type Trade } from '../lib/trades'
 import { themeColors } from '../lib/theme'
 import { AnimatedNumber } from './AnimatedNumber'
 import { EquityPanel, type Highlight, type Zoom } from './EquityPanel'
 import { InfoTip } from './InfoTip'
+import { InsightsPanel } from './InsightsPanel'
 import { RollingPanel } from './RollingPanel'
 import { Delta, StatTile } from './StatTile'
 import { riseIn, stagger } from '../lib/motion'
@@ -29,7 +30,7 @@ function sqnLabel(sqn: number | null): string | undefined {
 
 type Focus = { key: string; zoom: Zoom | null; highlight: Highlight | null }
 
-export function Overview({ stats, previous }: { stats: OverviewStats; previous: OverviewStats | null }) {
+export function Overview({ stats, previous, trades }: { stats: OverviewStats; previous: OverviewStats | null; trades: Trade[] }) {
   const navigate = useNavigate()
   const { search } = useLocation()
   const panelRef = useRef<HTMLDivElement>(null)
@@ -59,6 +60,7 @@ export function Overview({ stats, previous }: { stats: OverviewStats; previous: 
   return (
     <motion.div className="overview" initial="hidden" animate="show" variants={stagger}>
       <Hero stats={stats} previous={previous} />
+      <InsightsPanel trades={trades} />
 
       {/* Courbe en vedette à gauche, chiffres principaux à droite. */}
       <div className="overview-main">

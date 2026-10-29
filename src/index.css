@@ -29,6 +29,12 @@ body {
   margin: 0;
   min-height: 100vh;
   background: var(--black);
+  /* Les bulles d'explication cachées ne doivent pas créer de défilement horizontal. */
+  overflow-x: clip;
+}
+
+.sign-out .icon {
+  display: none;
 }
 
 /* Halos de lumière bleue et mauve qui dérivent lentement derrière la page. */
@@ -2609,6 +2615,335 @@ kbd {
   width: 100%;
   accent-color: var(--violet);
   cursor: pointer;
+}
+
+/* --- Constats automatiques --- */
+.insights {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.insight-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.insight {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  font-weight: 400;
+  text-align: left;
+  color: var(--text);
+  background: var(--navy);
+  border: 1px solid var(--navy-light);
+  border-left: 3px solid var(--violet);
+  border-radius: 12px;
+}
+
+.insight.gain {
+  border-left-color: var(--gain);
+}
+
+.insight.loss {
+  border-left-color: var(--loss);
+}
+
+.insight:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgb(47 125 255 / 0.1), rgb(168 85 247 / 0.1)), var(--navy);
+  box-shadow: 0 8px 26px rgb(0 0 0 / 0.35);
+}
+
+.insight:active:not(:disabled) {
+  transform: none;
+}
+
+.insight-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  font-size: 0.8rem;
+  color: #c99bff;
+  background: rgb(168 85 247 / 0.15);
+  border-radius: 8px;
+}
+
+.insight.gain .insight-icon {
+  color: var(--gain);
+  background: rgb(34 197 94 / 0.12);
+}
+
+.insight.loss .insight-icon {
+  color: var(--loss);
+  background: rgb(239 68 68 / 0.12);
+}
+
+.insight-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.insight-action {
+  font-size: 0.78rem;
+  color: var(--electric-hover);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.insight:hover .insight-action,
+.insight:focus-visible .insight-action {
+  opacity: 1;
+  transform: none;
+}
+
+.export-buttons {
+  display: inline-flex;
+  gap: 6px;
+}
+
+/* --- Accessibilité --- */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 8px 14px;
+  color: #fff;
+  background: var(--electric);
+  border-radius: 8px;
+  transform: translateY(-150%);
+  transition: transform 0.2s;
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+main:focus {
+  outline: none;
+}
+
+.print-header {
+  display: none;
+}
+
+/* --- Petits écrans (téléphone) --- */
+@media (max-width: 760px) {
+  .topbar {
+    padding: 8px 12px;
+  }
+
+  .topbar-left {
+    gap: 10px;
+    width: 100%;
+  }
+
+  /* Les onglets défilent horizontalement plutôt que de passer sur plusieurs lignes. */
+  .nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav a {
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+
+  .topbar-left {
+    flex-wrap: nowrap;
+  }
+
+  .brand {
+    flex: none;
+  }
+
+  .topbar-actions {
+    width: 100%;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .topbar-actions .filter-menu {
+    flex: 1;
+  }
+
+  .topbar-actions .filter-trigger {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .search-trigger kbd,
+  .topbar .label {
+    display: none;
+  }
+
+  .sign-out .icon {
+    display: inline;
+  }
+
+  .search-trigger,
+  .sync-button,
+  .sign-out {
+    justify-content: center;
+    min-width: 44px;
+    min-height: 40px;
+  }
+
+  .info-tip-text {
+    width: min(240px, calc(100vw - 40px));
+  }
+
+  .page {
+    padding-top: 18px;
+  }
+
+  .page-header {
+    align-items: flex-start;
+  }
+
+  .toolbar {
+    width: 100%;
+  }
+
+  .segmented {
+    flex-wrap: wrap;
+  }
+
+  /* Le choix de la colonne à croiser défile horizontalement sur une seule ligne. */
+  .dim-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .dim-chip {
+    flex: none;
+  }
+
+  .hero-spark {
+    min-height: 90px;
+  }
+
+  .overview-side .tiles,
+  .tiles,
+  .mini-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overview-side .tiles > :last-child:nth-child(odd) {
+    grid-column: span 2;
+  }
+
+  .panel {
+    padding: 14px;
+  }
+
+  .range-slider {
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+
+  .be-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .be-row .be-bar {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .lightbox-stage {
+    padding: 8px;
+  }
+
+  .lightbox-arrow {
+    top: auto;
+    bottom: 8px;
+    transform: none;
+  }
+
+  .lightbox-arrow:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+
+  .gallery,
+  .trade-shots {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .trade-hero-r {
+    align-items: flex-start;
+  }
+}
+
+/* --- Impression / export PDF : mêmes couleurs qu'à l'écran, sans boutons ni barre du haut --- */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  body::before,
+  .topbar,
+  .skip-link,
+  .toolbar,
+  .section-nav,
+  .export-buttons,
+  .filter-pill button,
+  .link-button,
+  .range-slider,
+  .chart-status button,
+  .tile-action,
+  .toasts,
+  .insight-action {
+    display: none !important;
+  }
+
+  .print-header {
+    display: block;
+    margin: 0 0 12px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .page {
+    max-width: none;
+    padding: 0;
+  }
+
+  .panel,
+  .tile,
+  .hero,
+  .insight,
+  .trade-hero,
+  .heatmap,
+  .calendar-layout {
+    break-inside: avoid;
+  }
+
+  /* À l'impression, rien ne doit rester à moitié animé. */
+  [style*='opacity: 0'] {
+    opacity: 1 !important;
+  }
+
+  [style*='transform'] {
+    transform: none !important;
+  }
 }
 
 /* Moins de mouvement si l'ordinateur le demande (réglage d'accessibilité). */

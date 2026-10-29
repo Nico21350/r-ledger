@@ -1,15 +1,18 @@
-import { useEffect, useState } from 'react'
+import { lazy, useEffect, useState } from 'react'
 import { Route, Routes } from 'react-router'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import { Login } from './components/Login'
 import { Layout } from './components/Layout'
-import { OverviewPage } from './pages/OverviewPage'
-import { AnalysesPage } from './pages/AnalysesPage'
-import { GalleryPage } from './pages/GalleryPage'
-import { TradePage } from './pages/TradePage'
-import { ComparePage } from './pages/ComparePage'
 import { NotFoundPage } from './pages/NotFoundPage'
+
+// Chaque écran est un fichier JavaScript séparé, téléchargé seulement quand on l'ouvre :
+// le premier affichage est plus rapide (découpage du code, « code splitting »).
+const OverviewPage = lazy(() => import('./pages/OverviewPage').then((m) => ({ default: m.OverviewPage })))
+const AnalysesPage = lazy(() => import('./pages/AnalysesPage').then((m) => ({ default: m.AnalysesPage })))
+const GalleryPage = lazy(() => import('./pages/GalleryPage').then((m) => ({ default: m.GalleryPage })))
+const TradePage = lazy(() => import('./pages/TradePage').then((m) => ({ default: m.TradePage })))
+const ComparePage = lazy(() => import('./pages/ComparePage').then((m) => ({ default: m.ComparePage })))
 
 function App() {
   // undefined = on ne sait pas encore si une session existe, null = pas connecté.

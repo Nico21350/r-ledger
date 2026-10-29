@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { ExportButtons } from '../components/ExportButtons'
 import { Overview } from '../components/Overview'
 import { PageState } from '../components/PageState'
 import { Segmented } from '../components/Segmented'
@@ -38,16 +39,19 @@ export function OverviewPage() {
               : 'Choisis une période pour comparer chaque chiffre avec la période précédente.'}
           </p>
         </div>
-        <Segmented<PeriodPreset>
-          id="overview-period"
-          label="Période"
-          options={PERIOD_PRESETS}
-          value={activePreset}
-          onChange={(preset) => setFilters({ ...filters, ...presetRange(preset, today) })}
-        />
+        <div className="toolbar">
+          <Segmented<PeriodPreset>
+            id="overview-period"
+            label="Période"
+            options={PERIOD_PRESETS}
+            value={activePreset}
+            onChange={(preset) => setFilters({ ...filters, ...presetRange(preset, today) })}
+          />
+          <ExportButtons trades={trades} name="vue-ensemble" />
+        </div>
       </div>
       <PageState isPending={isPending} error={error} total={allTrades.length} filtered={trades.length}>
-        <Overview stats={stats} previous={previous} />
+        <Overview stats={stats} previous={previous} trades={trades} />
       </PageState>
     </>
   )

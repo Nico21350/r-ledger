@@ -31,7 +31,7 @@ export function PageState({
 }
 
 // Blocs gris animés qui dessinent la page pendant le chargement.
-function Skeleton() {
+export function Skeleton() {
   return (
     <div className="skeleton-page" aria-busy="true" aria-label="Chargement des trades">
       <div className="skeleton hero-skeleton" />

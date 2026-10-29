@@ -75,6 +75,8 @@ export function CrossingsPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
   }
 
   const chartData = groups.map((g) => ({ ...g, name: label(g), metricValue: metricValue(g, metric) }))
+  // Largeur réservée aux noms à gauche des barres : juste ce qu'il faut pour le plus long (≈ 7 px par lettre).
+  const labelWidth = Math.min(150, Math.max(40, ...chartData.map((g) => g.name.length * 7 + 12)))
   const barColor = (g: Group) => {
     if (metric === 'winRate') return c.electric
     const v = metricValue(g, metric)
@@ -165,7 +167,7 @@ export function CrossingsPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
                   metric === 'winRate' ? formatPercent(v) : `${v.toLocaleString('fr-BE', { maximumFractionDigits: 1 })} R`
                 }
               />
-              <YAxis type="category" dataKey="name" width={150} stroke={c.muted} tick={{ fill: c.text, fontSize: 12 }} tickLine={false} axisLine={false} />
+              <YAxis type="category" dataKey="name" width={labelWidth} stroke={c.muted} tick={{ fill: c.text, fontSize: 12 }} tickLine={false} axisLine={false} />
               {metric !== 'winRate' && <ReferenceLine x={0} stroke={c.muted} />}
               <Tooltip content={<GroupTooltip isActive={(g) => g.value !== null && hasDimension(filters, dimKey, g.value)} />} cursor={{ fill: c.grid, fillOpacity: 0.35 }} />
               <Bar dataKey="metricValue" radius={4} barSize={26} animationDuration={600}>

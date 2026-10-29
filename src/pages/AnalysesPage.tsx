@@ -1,9 +1,11 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router'
 import { motion } from 'motion/react'
 import { AchievablePanel } from '../components/AchievablePanel'
 import { BePanel } from '../components/BePanel'
 import { CalendarPanel } from '../components/CalendarPanel'
 import { CrossingsPanel } from '../components/CrossingsPanel'
+import { ExportButtons } from '../components/ExportButtons'
 import { HeatmapPanel } from '../components/HeatmapPanel'
 import { HistogramPanel } from '../components/HistogramPanel'
 import { MonteCarloPanel } from '../components/MonteCarloPanel'
@@ -34,6 +36,14 @@ export function AnalysesPage() {
   const [drawer, setDrawer] = useState<DrawerContent | null>(null)
   const closeDrawer = useCallback(() => setDrawer(null), [])
   const count = trades.filter((t) => t.rr_closed !== null).length
+  const { hash } = useLocation()
+
+  // Arrivée avec une section dans l'adresse (#monte-carlo, depuis un constat) : on y descend une fois la page affichée.
+  useEffect(() => {
+    if (!hash || isPending) return
+    const timer = setTimeout(() => document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 350)
+    return () => clearTimeout(timer)
+  }, [hash, isPending])
 
   return (
     <>
@@ -41,6 +51,9 @@ export function AnalysesPage() {
         <div>
           <h2>Analyses</h2>
           <p className="muted">Ce qui marche, ce qui coûte : tes {count} trades découpés selon chaque colonne de Notion.</p>
+        </div>
+        <div className="toolbar">
+          <ExportButtons trades={trades} name="analyses" />
         </div>
         <nav className="section-nav" aria-label="Sections de la page">
           {SECTIONS.map((s) => (
