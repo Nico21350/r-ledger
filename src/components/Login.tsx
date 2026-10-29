@@ -14,7 +14,8 @@ export function Login() {
     setError(null)
     const { error } = await supabase.auth.signInWithPassword(credentials)
     // En cas de succès, App détecte la nouvelle session et change d'écran tout seul.
-    if (error) setError(source === 'demo' ? 'La démo est indisponible pour le moment.' : 'E-mail ou mot de passe incorrect.')
+    // Pour la démo, la raison donnée par Supabase est affichée : elle aide à régler le compte démo.
+    if (error) setError(source === 'demo' ? `La démo est indisponible pour le moment (${error.message}).` : 'E-mail ou mot de passe incorrect.')
     setLoading(null)
   }
 
