@@ -2,6 +2,7 @@ import { Suspense, useCallback, useState } from 'react'
 import { NavLink, useLocation, useOutlet } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useQueryClient } from '@tanstack/react-query'
+import { isDemoEmail } from '../lib/demo'
 import { supabase } from '../lib/supabase'
 import { useSync } from '../lib/queries'
 import { ActiveFilters } from './ActiveFilters'
@@ -19,6 +20,7 @@ const NAV = [
 
 // Cadre commun à tous les écrans : barre du haut, puis l'écran demandé, avec une transition entre écrans.
 export function Layout({ email }: { email: string }) {
+  const demo = isDemoEmail(email)
   const { pathname, search } = useLocation()
   // useOutlet (plutôt que <Outlet />) garde l'ancien écran affiché pendant son animation de sortie.
   const outlet = useOutlet()
@@ -87,6 +89,11 @@ export function Layout({ email }: { email: string }) {
             <span aria-hidden="true">⌕</span> <span className="label">Rechercher</span> <kbd>Ctrl K</kbd>
           </button>
           <FilterMenu />
+          {demo ? (
+            <span className="demo-badge" title="Compte de démonstration : consultation uniquement, aucune modification ni synchronisation">
+              Mode démo · lecture seule
+            </span>
+          ) : (
           <button className="sync-button" onClick={runSync} disabled={sync.isPending} aria-label="Synchroniser avec Notion">
             <svg className={sync.isPending ? 'spin' : ''} viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <path
@@ -100,9 +107,15 @@ export function Layout({ email }: { email: string }) {
             </svg>
             <span className="label">{sync.isPending ? 'Synchronisation…' : 'Synchroniser'}</span>
           </button>
-          <button className="secondary sign-out" onClick={signOut} title={email} aria-label="Se déconnecter">
+          )}
+          <button
+            className="secondary sign-out"
+            onClick={signOut}
+            title={demo ? undefined : email}
+            aria-label={demo ? 'Quitter la démo' : 'Se déconnecter'}
+          >
             <span className="icon" aria-hidden="true">⏻</span>
-            <span className="label">Se déconnecter</span>
+            <span className="label">{demo ? 'Quitter la démo' : 'Se déconnecter'}</span>
           </button>
         </div>
       </header>
@@ -130,7 +143,7 @@ export function Layout({ email }: { email: string }) {
       </main>
 
       <Toasts items={toasts} onDismiss={dismiss} />
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} onSync={runSync} />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} onSync={demo ? undefined : runSync} />
     </>
   )
 }

@@ -87,22 +87,29 @@ export async function mockSupabase(context: BrowserContext) {
       return json(paths.map((path) => ({ path, signedURL: `/object/sign/captures/${path}?token=e2e`, error: null })))
     }
     if (url.pathname.startsWith('/storage/v1/object/')) return route.fulfill({ status: 200, headers, contentType: 'image/png', body: PIXEL })
+    // Connexion par mot de passe : renvoie une session factice pour l'e-mail demandé (bouton « Voir la démo »).
+    if (url.pathname === '/auth/v1/token') {
+      const { email } = (route.request().postDataJSON() ?? {}) as { email?: string }
+      return json(fakeSession(email ?? 'inconnu@r-ledger.test'))
+    }
     if (url.pathname.startsWith('/auth/v1/')) return json({})
     return route.fulfill({ status: 404, body: '' })
   })
 }
 
-// Ouvre l'application déjà connectée (session factice rangée là où Supabase la cherche).
+// Session factice, de la même forme que celle renvoyée par Supabase.
+const fakeSession = (email: string) => ({
+  access_token: fakeJwt(),
+  token_type: 'bearer',
+  expires_in: 3600,
+  expires_at: 4102444800,
+  refresh_token: 'refresh-e2e',
+  user: { id: 'user-e2e', aud: 'authenticated', role: 'authenticated', email, app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z' },
+})
+
+// Ouvre l'application déjà connectée avec le compte propriétaire (session rangée là où Supabase la cherche).
 export async function signIn(page: Page) {
-  await page.addInitScript((token) => {
-    const session = {
-      access_token: token,
-      token_type: 'bearer',
-      expires_in: 3600,
-      expires_at: 4102444800,
-      refresh_token: 'refresh-e2e',
-      user: { id: 'user-e2e', aud: 'authenticated', role: 'authenticated', email: 'demo@r-ledger.test', app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z' },
-    }
+  await page.addInitScript((session) => {
     localStorage.setItem('sb-e2e-auth-token', JSON.stringify(session))
-  }, fakeJwt())
+  }, fakeSession('proprietaire@r-ledger.test'))
 }

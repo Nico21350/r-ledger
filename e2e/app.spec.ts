@@ -116,3 +116,16 @@ test.describe('connecté', () => {
     expect(csv).toContain(';3,5;')
   })
 })
+
+test('« Voir la démo » ouvre le mode démo, sans synchronisation possible', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Voir la démo' }).click()
+  await expect(page.locator('.hero-value')).toHaveText('+13 R')
+  await expect(page.getByText('Mode démo · lecture seule')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Synchroniser avec Notion' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Quitter la démo' })).toBeVisible()
+  // L'action « Synchroniser » n'est pas proposée non plus dans la recherche Ctrl+K.
+  await page.keyboard.press('Control+k')
+  await page.getByRole('combobox', { name: 'Rechercher' }).fill('synchro')
+  await expect(page.getByText('Aucun résultat pour « synchro »')).toBeVisible()
+})

@@ -1,21 +1,26 @@
 import { useState, type FormEvent } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
+import { DEMO_EMAIL, DEMO_PASSWORD, demoAvailable } from '../lib/demo'
 import { supabase } from '../lib/supabase'
 
 export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState<'form' | 'demo' | null>(null)
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setLoading(true)
+  async function signIn(credentials: { email: string; password: string }, source: 'form' | 'demo') {
+    setLoading(source)
     setError(null)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword(credentials)
     // En cas de succès, App détecte la nouvelle session et change d'écran tout seul.
-    if (error) setError('E-mail ou mot de passe incorrect.')
-    setLoading(false)
+    if (error) setError(source === 'demo' ? 'La démo est indisponible pour le moment.' : 'E-mail ou mot de passe incorrect.')
+    setLoading(null)
+  }
+
+  function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    signIn({ email, password }, 'form')
   }
 
   return (
@@ -52,9 +57,26 @@ export function Login() {
             </motion.p>
           )}
         </AnimatePresence>
-        <button type="submit" disabled={loading}>
-          {loading ? 'Connexion…' : 'Se connecter'}
+        <button type="submit" disabled={loading !== null}>
+          {loading === 'form' ? 'Connexion…' : 'Se connecter'}
         </button>
+        {demoAvailable && (
+          <>
+            <div className="login-separator">
+              <span>ou</span>
+            </div>
+            <motion.button
+              type="button"
+              className="demo-button"
+              disabled={loading !== null}
+              whileHover={{ scale: 1.02 }}
+              onClick={() => signIn({ email: DEMO_EMAIL!, password: DEMO_PASSWORD! }, 'demo')}
+            >
+              {loading === 'demo' ? 'Ouverture de la démo…' : 'Voir la démo'}
+            </motion.button>
+            <p className="muted small-note">Accès en lecture seule à un vrai journal de trading, sans inscription.</p>
+          </>
+        )}
       </motion.form>
     </main>
   )

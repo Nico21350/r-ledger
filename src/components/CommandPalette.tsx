@@ -15,7 +15,8 @@ type Entry =
 const GROUPS: Record<Entry['kind'], string> = { page: 'Écrans', action: 'Actions', trade: 'Trades' }
 
 // Recherche rapide (Ctrl+K ou ⌘K) : écrans, actions et trades, au clavier.
-export function CommandPalette({ open, onOpenChange, onSync }: { open: boolean; onOpenChange: (open: boolean) => void; onSync: () => void }) {
+// onSync absent (mode démo) : l'action « Synchroniser » n'est pas proposée.
+export function CommandPalette({ open, onOpenChange, onSync }: { open: boolean; onOpenChange: (open: boolean) => void; onSync?: () => void }) {
   const [query, setQuery] = useState('')
   const [active, setActive] = useState(0)
   const navigate = useNavigate()
@@ -49,7 +50,7 @@ export function CommandPalette({ open, onOpenChange, onSync }: { open: boolean; 
       { kind: 'page', id: 'p-analyses', label: 'Analyses', hint: 'Croisements, calendrier, Monte-Carlo', run: go('/analyses') },
       { kind: 'page', id: 'p-galerie', label: 'Galerie', hint: 'Toutes les captures', run: go('/galerie') },
       { kind: 'page', id: 'p-comparer', label: 'Comparer deux trades', hint: 'Côte à côte', run: go('/comparer') },
-      { kind: 'action', id: 'a-sync', label: 'Synchroniser avec Notion', hint: 'Importe les nouveaux trades', run: onSync },
+      ...(onSync ? [{ kind: 'action' as const, id: 'a-sync', label: 'Synchroniser avec Notion', hint: 'Importe les nouveaux trades', run: onSync }] : []),
       { kind: 'action', id: 'a-reset', label: 'Retirer tous les filtres', hint: 'Revenir à tous les trades', run: () => setFilters(EMPTY_FILTERS) },
     ]
     const words = normalize(query).split(/\s+/).filter(Boolean)

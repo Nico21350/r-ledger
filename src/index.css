@@ -2710,6 +2710,47 @@ kbd {
   gap: 6px;
 }
 
+/* --- Mode démo --- */
+.demo-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e9d5ff;
+  white-space: nowrap;
+  background: linear-gradient(135deg, rgb(47 125 255 / 0.2), rgb(168 85 247 / 0.25));
+  border: 1px solid rgb(168 85 247 / 0.6);
+  border-radius: 999px;
+  box-shadow: 0 0 16px rgb(168 85 247 / 0.2);
+}
+
+.login-separator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.login-separator::before,
+.login-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--navy-light);
+}
+
+.demo-button {
+  background: var(--accent-gradient);
+  box-shadow: 0 0 22px var(--violet-glow);
+}
+
+.demo-button:hover:not(:disabled) {
+  background: var(--accent-gradient);
+  box-shadow: 0 0 30px var(--violet-glow), 0 0 14px var(--electric-glow);
+}
+
 /* --- Accessibilité --- */
 .skip-link {
   position: fixed;

@@ -32,6 +32,9 @@ export default defineConfig({
     env: {
       VITE_SUPABASE_URL: 'https://e2e.supabase.test',
       VITE_SUPABASE_PUBLISHABLE_KEY: 'cle-de-test',
+      // Identifiants fictifs du bouton « Voir la démo » (la fausse adresse Supabase accepte n'importe lesquels).
+      VITE_DEMO_EMAIL: 'demo@r-ledger.test',
+      VITE_DEMO_PASSWORD: 'mot-de-passe-fictif',
     },
   },
 })
