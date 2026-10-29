@@ -115,10 +115,13 @@ Règles de calcul :
   adresse Supabase et des données fictives (e2e/fixtures.ts) : jamais de mot de passe ni de vraie base ;
   vérifie aussi qu'aucun montant ($, €) n'apparaît. README de présentation avec captures (docs/screenshots) et GIF (docs/demo.gif).
 
-### Mise en ligne (en cours)
+### Mise en ligne. FAIT
+Site : https://r-ledger-seven.vercel.app (Vercel, déployé automatiquement à chaque envoi sur la branche main).
 - FAIT : synchronisation réservée au propriétaire (secret OWNER_USER_ID dans la fonction sync-notion).
 - FAIT : compte démo en lecture seule + bouton « Voir la démo » (VITE_DEMO_EMAIL / VITE_DEMO_PASSWORD dans .env et sur Vercel).
 - FAIT : vérification des secrets (aucun dans le code ni l'historique) ; e-mail des commits remplacé par l'adresse anonyme GitHub.
 - FAIT : dépôt public https://github.com/Nico21350/r-ledger
-- EN COURS : visite automatique anti-pause de Supabase (GitHub Actions tous les 3 jours, fonction SQL ping(),
-  secrets GitHub SUPABASE_URL et SUPABASE_PUBLISHABLE_KEY), puis hébergement sur Vercel.
+- FAIT : visite automatique anti-pause de Supabase (GitHub Actions tous les 3 jours, fonction SQL ping(),
+  secrets GitHub SUPABASE_URL et SUPABASE_PUBLISHABLE_KEY).
+- FAIT : hébergement Vercel (variables VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, VITE_DEMO_EMAIL, VITE_DEMO_PASSWORD),
+  Site URL et Redirect URLs réglés dans Supabase Auth.

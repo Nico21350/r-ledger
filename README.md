@@ -2,6 +2,8 @@
 
 **Journal de trading qui transforme une base Notion en tableau de bord d'analyse, exprimé uniquement en R** (multiples du risque initial, jamais en devise).
 
+**▶ [Voir la démo en ligne](https://r-ledger-seven.vercel.app)** : bouton « Voir la démo » sur l'écran de connexion (lecture seule, sans inscription).
+
 Les trades sont saisis dans Notion. R Ledger les importe dans Supabase avec leurs captures TradingView, puis montre ce que Notion ne sait pas faire : courbe des R interactive, croisements sur chaque critère, chercheur de setups, simulation de Monte-Carlo, galerie de captures…
 
 ![Démonstration : zoom sur la plus forte baisse, fiche trade, croisements, plein écran des captures](docs/demo.gif)
