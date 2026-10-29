@@ -61,7 +61,8 @@ export function CrossingsPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
 
   // Phrase de synthèse : meilleure et pire valeur, parmi les groupes assez grands si possible.
   const ranked = groups.filter((g) => g.value !== null && g.count > 0)
-  const pool = ranked.some((g) => g.reliable) ? ranked.filter((g) => g.reliable) : ranked
+  const reliable = ranked.filter((g) => g.reliable)
+  const pool = reliable.length > 1 ? reliable : ranked
   const best = pool.length > 1 ? pool.reduce((a, b) => (metricValue(b, metric) > metricValue(a, metric) ? b : a)) : null
   const worst = pool.length > 1 ? pool.reduce((a, b) => (metricValue(b, metric) < metricValue(a, metric) ? b : a)) : null
 

@@ -27,3 +27,8 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Résultats des tests de bout en bout (Playwright)
+test-results
+playwright-report
+dist-e2e

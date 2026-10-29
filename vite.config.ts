@@ -1,9 +1,11 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // Vitest (npm test) : seulement les tests des calculs ; les tests de bout en bout (e2e/) passent par Playwright.
+  test: { include: ['src/**/*.test.ts'] },
   build: {
     rolldownOptions: {
       output: {

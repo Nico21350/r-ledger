@@ -2,7 +2,7 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
     "target": "es2023",
-    "lib": ["ES2023"],
+    "lib": ["ES2023", "DOM"], // DOM : le code des tests e2e qui s'exécute dans la page (window…)
     "types": ["node"],
     "skipLibCheck": true,
 
@@ -19,5 +19,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "playwright.config.ts", "e2e"]
 }
