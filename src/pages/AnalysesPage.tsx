@@ -1,10 +1,14 @@
 import { useCallback, useState } from 'react'
 import { motion } from 'motion/react'
+import { AchievablePanel } from '../components/AchievablePanel'
+import { BePanel } from '../components/BePanel'
 import { CalendarPanel } from '../components/CalendarPanel'
 import { CrossingsPanel } from '../components/CrossingsPanel'
 import { HeatmapPanel } from '../components/HeatmapPanel'
 import { HistogramPanel } from '../components/HistogramPanel'
+import { MonteCarloPanel } from '../components/MonteCarloPanel'
 import { PageState } from '../components/PageState'
+import { SetupFinder } from '../components/SetupFinder'
 import { TradeDrawer, type DrawerContent } from '../components/TradeDrawer'
 import { useFilteredTrades, usePageTitle } from '../hooks/useFilters'
 import { MIN_SAMPLE } from '../lib/analysis'
@@ -18,6 +22,10 @@ const SECTIONS = [
   { id: 'jour-session', label: 'Jour × session' },
   { id: 'repartition', label: 'Répartition' },
   { id: 'calendrier', label: 'Calendrier' },
+  { id: 'rr-atteignable', label: 'RR atteignable' },
+  { id: 'effet-be', label: 'Effet du BE' },
+  { id: 'setups', label: 'Setups' },
+  { id: 'monte-carlo', label: 'Monte-Carlo' },
 ]
 
 export function AnalysesPage() {
@@ -65,6 +73,12 @@ export function AnalysesPage() {
             <HistogramPanel trades={trades} onOpen={setDrawer} />
           </div>
           <CalendarPanel trades={trades} onOpen={setDrawer} />
+          <div className="analyses-grid">
+            <AchievablePanel trades={trades} onOpen={setDrawer} />
+            <BePanel trades={trades} onOpen={setDrawer} />
+          </div>
+          <SetupFinder trades={trades} onOpen={setDrawer} />
+          <MonteCarloPanel trades={trades} />
         </motion.div>
       </PageState>
 

@@ -135,3 +135,78 @@ export function monthTotals(days: Map<string, CalendarDay>): { month: string; to
   }
   return [...months.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([month, m]) => ({ month, ...m }))
 }
+
+// « Achievable RR » est du texte libre : "2.5", "RR4", "4 at HTF draw", "Full at 2, Runner at 3", "0 (BE)".
+// On garde le plus grand nombre écrit (le meilleur résultat possible) ; null si aucun nombre.
+export function parseAchievable(text: string | null): number | null {
+  const numbers = text?.match(/\d+(?:[.,]\d+)?/g)?.map((n) => Number(n.replace(',', '.')))
+  return numbers?.length ? Math.max(...numbers) : null
+}
+
+// R laissés sur la table : ce qui était atteignable moins ce qui a été encaissé.
+// Une perte ne « laisse » rien si rien n'était atteignable (atteignable 0 contre −1 R encaissé = 0).
+export function leftOnTable(achievable: number, closed: number): number {
+  return Math.max(0, achievable - Math.max(0, closed))
+}
+
+export type RrPoint = { trade: Trade; achievable: number; closed: number; left: number }
+
+export type RrComparison = {
+  points: RrPoint[]
+  unreadable: number // trades avec un texte « Achievable RR » sans aucun nombre
+  totalLeft: number
+  captureRate: number | null // R gagnés ÷ R atteignables, sur les trades où un gain était possible
+}
+
+export function compareAchievable(trades: Trade[]): RrComparison {
+  const points: RrPoint[] = []
+  let unreadable = 0
+  for (const trade of trades) {
+    if (trade.rr_closed === null || !trade.achievable_rr_text?.trim()) continue
+    const achievable = parseAchievable(trade.achievable_rr_text)
+    if (achievable === null) {
+      unreadable++
+      continue
+    }
+    points.push({ trade, achievable, closed: trade.rr_closed, left: leftOnTable(achievable, trade.rr_closed) })
+  }
+  const possible = points.filter((p) => p.achievable > 0)
+  const reachable = possible.reduce((sum, p) => sum + p.achievable, 0)
+  const captured = possible.reduce((sum, p) => sum + Math.max(0, Math.min(p.closed, p.achievable)), 0)
+  return {
+    points,
+    unreadable,
+    totalLeft: points.reduce((sum, p) => sum + p.left, 0),
+    captureRate: reachable > 0 ? captured / reachable : null,
+  }
+}
+
+// Effet du stop remonté à BE (colonne « BE » de Notion).
+// Perte évitée : le trade aurait perdu 1 R (le risque initial). Gain manqué : le trade aurait rapporté
+// son « Achievable RR » ; s'il n'est pas lisible ou vaut 0, on l'estime avec le gain moyen de la période.
+export const BE_PREVENTED = 'Prevented loss'
+export const BE_MISSED = 'Missed win'
+
+export type BeEffect = {
+  prevented: Trade[]
+  missed: Trade[]
+  savedR: number
+  missedR: number
+  estimatedMissed: number // nombre de gains manqués estimés avec le gain moyen
+  averageWin: number | null
+}
+
+export function beEffect(trades: Trade[]): BeEffect {
+  const wins = trades.map((t) => t.rr_closed).filter((r): r is number => r !== null && r > 0)
+  const averageWin = wins.length ? wins.reduce((a, b) => a + b, 0) / wins.length : null
+  const prevented = trades.filter((t) => t.be_effect === BE_PREVENTED)
+  const missed = trades.filter((t) => t.be_effect === BE_MISSED)
+  let estimatedMissed = 0
+  const missedR = missed.reduce((sum, t) => {
+    const achievable = parseAchievable(t.achievable_rr_text)
+    if (achievable !== null && achievable > 0) return sum + achievable
+    estimatedMissed++
+    return sum + (averageWin ?? 0)
+  }, 0)
+  return { prevented, missed, savedR: prevented.length, missedR, estimatedMissed, averageWin }
+}
