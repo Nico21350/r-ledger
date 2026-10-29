@@ -1305,41 +1305,101 @@ kbd {
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 14px;
+  gap: 26px 22px;
+  padding: 10px 14px 0 0; /* place pour les feuilles décalées des cartes empilées */
 }
 
 .gallery-skeleton {
+  aspect-ratio: 16 / 11;
   border-radius: 14px;
 }
 
+/* Une carte par jour. Plusieurs captures : deux feuilles décalées derrière l'aperçu, qui s'écartent au survol. */
 .gallery-item {
   position: relative;
   display: block;
   padding: 0;
-  overflow: hidden;
   text-align: left;
-  background: var(--navy);
-  border: 1px solid var(--navy-light);
-  border-radius: 14px;
+  background: transparent;
+  border: none;
   cursor: zoom-in;
 }
 
 .gallery-item:hover:not(:disabled) {
+  background: transparent;
+  box-shadow: none;
+}
+
+.gallery-item.stacked::before,
+.gallery-item.stacked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--navy-light);
+  border: 1px solid rgb(168 85 247 / 0.25);
+  border-radius: 14px;
+  transition: transform 0.35s var(--ease-out), border-color 0.35s;
+}
+
+.gallery-item.stacked::before {
+  transform: translate(6px, -6px) rotate(1.5deg);
+  opacity: 0.55;
+}
+
+.gallery-item.stacked::after {
+  transform: translate(3px, -3px) rotate(0.75deg);
+  opacity: 0.8;
+}
+
+.gallery-item.stacked:hover::before {
+  transform: translate(14px, -10px) rotate(4deg);
+  border-color: rgb(168 85 247 / 0.6);
+}
+
+.gallery-item.stacked:hover::after {
+  transform: translate(7px, -5px) rotate(2deg);
+  border-color: rgb(168 85 247 / 0.6);
+}
+
+.gallery-frame {
+  position: relative;
+  z-index: 1;
+  display: block;
+  overflow: hidden;
   background: var(--navy);
+  border: 1px solid var(--navy-light);
+  border-radius: 14px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.gallery-item:hover .gallery-frame {
   border-color: var(--violet);
   box-shadow: 0 12px 32px rgb(0 0 0 / 0.45), 0 0 24px rgb(168 85 247 / 0.25);
 }
 
-.gallery-item img {
+.gallery-frame img {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 11;
   object-fit: cover;
   transition: transform 0.5s var(--ease-out);
 }
 
-.gallery-item:hover img {
+.gallery-item:hover .gallery-frame img {
   transform: scale(1.06);
+}
+
+.gallery-count {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent-gradient);
+  border-radius: 999px;
+  box-shadow: 0 0 14px var(--violet-glow);
 }
 
 .gallery-caption {
@@ -1349,16 +1409,24 @@ kbd {
   justify-content: space-between;
   align-items: flex-end;
   gap: 8px;
-  padding: 28px 12px 10px;
+  padding: 36px 14px 12px;
   font-size: 0.82rem;
   color: var(--text);
-  background: linear-gradient(transparent, rgb(5 7 13 / 0.92));
+  background: linear-gradient(transparent, rgb(5 7 13 / 0.94));
 }
 
 .gallery-caption > span:first-child {
   display: flex;
   flex-direction: column;
   gap: 2px;
+}
+
+.gallery-date {
+  font-size: 0.95rem;
+}
+
+.gallery-date::first-letter {
+  text-transform: uppercase;
 }
 
 /* --- Plein écran --- */

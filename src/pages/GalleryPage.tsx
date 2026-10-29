@@ -5,11 +5,10 @@ import { PageState } from '../components/PageState'
 import { Segmented } from '../components/Segmented'
 import { useFilteredTrades, usePageTitle } from '../hooks/useFilters'
 import { useCaptures } from '../lib/queries'
-import { formatDate, formatR, rClass } from '../lib/trades'
+import { brusselsDay, formatR, rClass } from '../lib/trades'
 
 type Outcome = 'tous' | 'gains' | 'pertes' | 'be'
 type Sort = 'recent' | 'ancien' | 'meilleur' | 'pire'
-type Show = 'toutes' | 'une'
 
 const OUTCOMES: { value: Outcome; label: string }[] = [
   { value: 'tous', label: 'Tous' },
@@ -25,46 +24,51 @@ const SORTS: { value: Sort; label: string }[] = [
   { value: 'pire', label: 'Pires R' },
 ]
 
-const SHOWS: { value: Show; label: string }[] = [
-  { value: 'toutes', label: 'Toutes les captures' },
-  { value: 'une', label: 'Une par trade' },
-]
+// Une carte par jour : toutes les captures des trades de ce jour, et leur total en R.
+type Day = { day: string | null; items: LightboxItem[]; trades: number; instruments: string[]; totalR: number }
 
-// Mosaïque des captures TradingView des trades filtrés ; un clic ouvre le plein écran.
+const dayLabel = (day: string | null) =>
+  day
+    ? new Date(`${day}T12:00:00Z`).toLocaleDateString('fr-BE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+    : 'Sans date'
+
+// Mosaïque des captures, regroupées par jour ; un clic ouvre toutes les captures du jour en plein écran.
 export function GalleryPage() {
   usePageTitle('Galerie')
   const { trades, allTrades, isPending, error } = useFilteredTrades()
   const captures = useCaptures()
   const [outcome, setOutcome] = useState<Outcome>('tous')
   const [sort, setSort] = useState<Sort>('recent')
-  const [show, setShow] = useState<Show>('toutes')
-  const [open, setOpen] = useState<number | null>(null)
+  const [open, setOpen] = useState<{ day: Day; index: number } | null>(null)
 
-  const items = useMemo<LightboxItem[]>(() => {
+  const days = useMemo<Day[]>(() => {
     const byTrade = captures.data
     if (!byTrade) return []
-    const kept = trades.filter((t) => {
-      const r = t.rr_closed
-      if (outcome === 'gains') return r !== null && r > 0
-      if (outcome === 'pertes') return r !== null && r < 0
-      if (outcome === 'be') return r === 0
-      return true
-    })
-    const sorted = [...kept].sort((a, b) => {
-      if (sort === 'meilleur' || sort === 'pire') {
-        const diff = (b.rr_closed ?? -Infinity) - (a.rr_closed ?? -Infinity)
-        return sort === 'meilleur' ? diff : -diff
-      }
-      const diff = (b.traded_at ?? '').localeCompare(a.traded_at ?? '')
+    const groups = new Map<string | null, Day>()
+    for (const trade of trades) {
+      const r = trade.rr_closed
+      if (outcome === 'gains' && !(r !== null && r > 0)) continue
+      if (outcome === 'pertes' && !(r !== null && r < 0)) continue
+      if (outcome === 'be' && r !== 0) continue
+      const shots = byTrade.get(trade.id) ?? []
+      if (shots.length === 0) continue
+      const key = brusselsDay(trade.traded_at)
+      const group = groups.get(key) ?? { day: key, items: [], trades: 0, instruments: [], totalR: 0 }
+      group.items.push(...shots.map((capture) => ({ capture, trade })))
+      group.trades++
+      group.totalR += r ?? 0
+      if (trade.instrument && !group.instruments.includes(trade.instrument)) group.instruments.push(trade.instrument)
+      groups.set(key, group)
+    }
+    return [...groups.values()].sort((a, b) => {
+      if (sort === 'meilleur') return b.totalR - a.totalR
+      if (sort === 'pire') return a.totalR - b.totalR
+      const diff = (b.day ?? '').localeCompare(a.day ?? '')
       return sort === 'recent' ? diff : -diff
     })
-    return sorted.flatMap((trade) => {
-      const list = byTrade.get(trade.id) ?? []
-      return (show === 'une' ? list.slice(0, 1) : list).map((capture) => ({ capture, trade }))
-    })
-  }, [captures.data, trades, outcome, sort, show])
+  }, [captures.data, trades, outcome, sort])
 
-  const tradeCount = new Set(items.map((i) => i.trade.id)).size
+  const captureCount = days.reduce((sum, d) => sum + d.items.length, 0)
 
   return (
     <>
@@ -74,13 +78,12 @@ export function GalleryPage() {
           <p className="muted">
             {captures.isPending
               ? 'Chargement des captures…'
-              : `${items.length} capture${items.length > 1 ? 's' : ''} de ${tradeCount} trade${tradeCount > 1 ? 's' : ''}`}
+              : `${days.length} jour${days.length > 1 ? 's' : ''} · ${captureCount} capture${captureCount > 1 ? 's' : ''}`}
           </p>
         </div>
         <div className="toolbar">
           <Segmented id="gallery-outcome" label="Résultat" options={OUTCOMES} value={outcome} onChange={setOutcome} />
           <Segmented id="gallery-sort" label="Ordre" options={SORTS} value={sort} onChange={setSort} />
-          <Segmented id="gallery-show" label="Captures affichées" options={SHOWS} value={show} onChange={setShow} />
         </div>
       </div>
 
@@ -88,42 +91,40 @@ export function GalleryPage() {
         {captures.isPending ? (
           <div className="gallery">
             {Array.from({ length: 8 }, (_, i) => (
-              <div key={i} className="skeleton gallery-skeleton" style={{ height: 160 + (i % 3) * 60 }} />
+              <div key={i} className="skeleton gallery-skeleton" />
             ))}
           </div>
-        ) : items.length === 0 ? (
+        ) : days.length === 0 ? (
           <p className="muted">Aucune capture pour cette sélection.</p>
         ) : (
           <motion.div className="gallery" layout>
             <AnimatePresence mode="popLayout">
-              {items.map((item, i) => (
+              {days.map((d, i) => (
                 <motion.button
-                  key={item.capture.id}
+                  key={d.day ?? 'sans-date'}
                   type="button"
                   layout
-                  className="gallery-item"
+                  className={`gallery-item${d.items.length > 1 ? ' stacked' : ''}`}
                   initial={{ opacity: 0, y: 16, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.35, delay: Math.min(i, 20) * 0.025, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.35, delay: Math.min(i, 20) * 0.03, ease: [0.16, 1, 0.3, 1] }}
                   whileHover={{ y: -4 }}
-                  onClick={() => setOpen(i)}
-                  aria-label={`Agrandir la capture du trade ${item.trade.instrument ?? ''} du ${formatDate(item.trade)}`}
+                  onClick={() => setOpen({ day: d, index: 0 })}
+                  aria-label={`Voir les ${d.items.length} captures du ${dayLabel(d.day)}`}
                 >
-                  <img src={item.capture.url} alt="" loading="lazy" />
-                  <span className="gallery-caption">
+                  <span className="gallery-frame">
+                    <img src={d.items[0].capture.url} alt="" loading="lazy" />
+                    {d.items.length > 1 && <span className="gallery-count">{d.items.length} captures</span>}
+                    <span className="gallery-caption">
                     <span>
-                      <strong>
-                        {item.trade.instrument ?? '—'} {item.trade.direction ?? ''}
-                      </strong>
+                      <strong className="gallery-date">{dayLabel(d.day)}</strong>
                       <span className="muted">
-                        {formatDate(item.trade)}
-                        {item.trade.ny_hour && ` · ${item.trade.ny_hour}`}
+                        {d.instruments.join(', ') || '—'} · {d.trades} trade{d.trades > 1 ? 's' : ''}
                       </span>
                     </span>
-                    {item.trade.rr_closed !== null && (
-                      <span className={`r-badge ${rClass(item.trade.rr_closed)}`}>{formatR(item.trade.rr_closed)}</span>
-                    )}
+                      <span className={`r-badge ${rClass(d.totalR)}`}>{formatR(d.totalR)}</span>
+                    </span>
                   </span>
                 </motion.button>
               ))}
@@ -132,7 +133,12 @@ export function GalleryPage() {
         )}
       </PageState>
 
-      <Lightbox items={items} index={open} onIndexChange={setOpen} onClose={() => setOpen(null)} />
+      <Lightbox
+        items={open?.day.items ?? []}
+        index={open?.index ?? null}
+        onIndexChange={(index) => setOpen((o) => (o ? { ...o, index } : o))}
+        onClose={() => setOpen(null)}
+      />
     </>
   )
 }
