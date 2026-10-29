@@ -32,3 +32,6 @@ dist-ssr
 test-results
 playwright-report
 dist-e2e
+
+# Consignes personnelles de Claude Code (jamais publiées)
+CLAUDE.local.md
