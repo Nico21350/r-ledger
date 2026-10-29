@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useSync } from '../lib/queries'
+import { ActiveFilters } from './ActiveFilters'
 import { FilterMenu } from './FilterMenu'
 import { Toasts, type ToastItem } from './Toasts'
 
@@ -92,6 +93,7 @@ export function Layout({ email }: { email: string }) {
       </header>
 
       <main className="page">
+        <ActiveFilters />
         <AnimatePresence mode="wait">
           <motion.div
             key={pathname}

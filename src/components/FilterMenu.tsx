@@ -8,10 +8,12 @@ import {
   presetRange,
   SESSION_ORDER,
   todayInBrussels,
+  withoutDimension,
   type Filters,
 } from '../lib/filters'
 import { useTrades } from '../lib/queries'
 import { useFilters } from '../hooks/useFilters'
+import { CRITERION_KEYS, DIMENSION_BY_KEY } from '../lib/dimensions'
 
 // Filtre global en menu déroulant : un seul bouton dans la barre du haut.
 export function FilterMenu() {
@@ -171,6 +173,19 @@ export function FilterMenu() {
               </Chip>
             </div>
           </Section>
+
+          {/* Critères appliqués en cliquant dans l'écran Analyses : on peut les retirer ici. */}
+          {CRITERION_KEYS.some((k) => filters.criteria[k]) && (
+            <Section title="Autres critères">
+              <div className="chips">
+                {CRITERION_KEYS.filter((k) => filters.criteria[k]).map((k) => (
+                  <Chip key={k} active onClick={() => setFilters(withoutDimension(filters, k))}>
+                    {DIMENSION_BY_KEY[k].label} : {filters.criteria[k]} ×
+                  </Chip>
+                ))}
+              </div>
+            </Section>
+          )}
 
           <footer className="row filter-footer">
             <span className="muted">

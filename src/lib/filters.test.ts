@@ -3,6 +3,9 @@ import {
   applyFilters,
   countActiveFilters,
   EMPTY_FILTERS,
+  hasDimension,
+  withDimension,
+  withoutDimension,
   parseFilters,
   presetRange,
   previousRange,
@@ -20,6 +23,7 @@ describe('adresse de la page', () => {
       sessions: ['NY-1'],
       direction: 'SELL',
       taken: 'non-pris',
+      criteria: { jour: 'Mardi', fvg: 'Oui', emotion: '1 - calme' },
     }
     expect(parseFilters(serializeFilters(filters))).toEqual(filters)
   })
@@ -97,5 +101,25 @@ describe('previousRange', () => {
 
   it("ne compare rien sans date de début", () => {
     expect(previousRange(EMPTY_FILTERS, '2026-10-28')).toBeNull()
+  })
+})
+
+describe('critères de l’écran Analyses', () => {
+  const tuesday = makeTrade({ traded_at: '2026-05-12T13:30:00Z', htf_range_tf: 'H1', fvg_against: true })
+  const wednesday = makeTrade({ traded_at: '2026-05-13T13:30:00Z', htf_range_tf: 'H4', fvg_against: false })
+
+  it('filtre sur le jour, le HTF et le FVG', () => {
+    expect(applyFilters([tuesday, wednesday], { ...EMPTY_FILTERS, criteria: { jour: 'Mardi' } })).toEqual([tuesday])
+    expect(applyFilters([tuesday, wednesday], { ...EMPTY_FILTERS, criteria: { htf: 'H4' } })).toEqual([wednesday])
+    expect(applyFilters([tuesday, wednesday], { ...EMPTY_FILTERS, criteria: { fvg: 'Oui' } })).toEqual([tuesday])
+  })
+
+  it('applique et retire une dimension, y compris celles du menu', () => {
+    const f = withDimension(withDimension(EMPTY_FILTERS, 'session', 'NY-2'), 'jour', 'Mardi')
+    expect(f.sessions).toEqual(['NY-2'])
+    expect(hasDimension(f, 'jour', 'Mardi')).toBe(true)
+    expect(countActiveFilters(f)).toBe(2)
+    expect(withoutDimension(withoutDimension(f, 'jour'), 'session')).toEqual(EMPTY_FILTERS)
+    expect(withDimension(EMPTY_FILTERS, 'pris', 'Non pris').taken).toBe('non-pris')
   })
 })

@@ -1133,6 +1133,558 @@ button.small {
   line-height: 1.6;
 }
 
+/* --- Filtres actifs (sous la barre du haut) --- */
+.active-filters {
+  overflow: hidden;
+}
+
+.active-filters-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 18px;
+  font-size: 0.85rem;
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, rgb(47 125 255 / 0.25), rgb(168 85 247 / 0.25));
+  border: 1px solid rgb(168 85 247 / 0.6);
+  border-radius: 999px;
+}
+
+.filter-pill button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--text);
+  background: rgb(5 7 13 / 0.5);
+  border-radius: 999px;
+}
+
+.filter-pill button:hover:not(:disabled) {
+  background: var(--loss);
+  box-shadow: none;
+}
+
+.link-button {
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  background: transparent;
+  text-decoration: underline;
+}
+
+.link-button:hover:not(:disabled) {
+  color: var(--text);
+  background: transparent;
+  box-shadow: none;
+}
+
+/* --- Écran Analyses --- */
+.analyses {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.analyses-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .analyses-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.analyses .panel {
+  scroll-margin-top: 80px;
+}
+
+/* Panneau étiré à la hauteur de son voisin : le graphique prend la place restante. */
+.analyses-grid {
+  align-items: stretch;
+}
+
+.panel-fill {
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-fill {
+  flex: 1;
+  min-height: 300px;
+}
+
+.section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.section-nav a {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--navy-light);
+  border-radius: 999px;
+  transition: color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.section-nav a:hover {
+  color: var(--text);
+  border-color: var(--violet);
+  box-shadow: 0 0 14px rgb(168 85 247 / 0.25);
+}
+
+.sample-warning {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text);
+  background: linear-gradient(90deg, rgb(168 85 247 / 0.14), transparent 70%), var(--navy);
+  border: 1px solid rgb(168 85 247 / 0.35);
+  border-left: 3px solid var(--violet);
+  border-radius: 10px;
+}
+
+.low-sample {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--muted);
+  vertical-align: middle;
+  border: 1px dashed var(--muted);
+  border-radius: 999px;
+  cursor: help;
+}
+
+/* Choix de la colonne à croiser : la pastille glisse d'une colonne à l'autre. */
+.dim-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 4px;
+  background: var(--black);
+  border: 1px solid var(--navy-light);
+  border-radius: 12px;
+}
+
+.dim-chip {
+  position: relative;
+  padding: 7px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+  background: transparent;
+  border-radius: 8px;
+}
+
+.dim-chip:hover:not(:disabled) {
+  color: var(--text);
+  background: transparent;
+  box-shadow: none;
+}
+
+.dim-chip.active {
+  color: #fff;
+}
+
+.dim-chip-pill {
+  position: absolute;
+  inset: 0;
+  background: var(--accent-gradient);
+  border-radius: 8px;
+  box-shadow: 0 0 16px var(--violet-glow);
+}
+
+.crossing-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .crossing-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.chart-note {
+  margin: 6px 0 0;
+  font-size: 0.75rem;
+}
+
+.table-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  padding: 0;
+  text-align: right;
+  border-bottom: 1px solid var(--navy-light);
+}
+
+.data-table th:first-child,
+.data-table td:first-child {
+  text-align: left;
+}
+
+.data-table th button {
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  background: transparent;
+  border-radius: 0;
+}
+
+.data-table th button:hover:not(:disabled) {
+  color: var(--text);
+  background: transparent;
+  box-shadow: none;
+}
+
+.sort-arrow {
+  margin-left: 4px;
+  opacity: 0.6;
+}
+
+.data-table td {
+  padding: 10px;
+  text-align: right;
+  border-bottom: 1px solid rgb(19 36 74 / 0.6);
+}
+
+.data-table tbody tr {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.data-table tbody tr:hover,
+.data-table tbody tr:focus-visible {
+  background: linear-gradient(90deg, rgb(47 125 255 / 0.12), rgb(168 85 247 / 0.12));
+  outline: none;
+}
+
+.data-table tr.low td {
+  color: var(--muted);
+}
+
+.data-table tr.low td.gain,
+.data-table tr.low td.loss {
+  opacity: 0.6;
+}
+
+/* Carte de chaleur jour × session */
+.heatmap-scroll {
+  margin-top: 16px;
+  padding: 6px;
+  overflow-x: auto;
+}
+
+.heatmap {
+  display: grid;
+  gap: 6px;
+  align-items: center;
+}
+
+.heatmap-head {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--muted);
+}
+
+.heatmap-row-head {
+  padding-right: 8px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.heatmap-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 58px;
+  padding: 6px 4px;
+  color: #fff;
+  border: 1px solid rgb(255 255 255 / 0.06);
+  border-radius: 10px;
+}
+
+.heatmap-cell:hover:not(:disabled) {
+  box-shadow: 0 0 0 2px var(--violet), 0 8px 24px rgb(0 0 0 / 0.4);
+}
+
+.heatmap-cell strong {
+  font-size: 0.9rem;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.5);
+}
+
+.heatmap-cell span {
+  font-size: 0.7rem;
+  opacity: 0.85;
+}
+
+.heatmap-cell.low {
+  border: 1px dashed rgb(255 255 255 / 0.45);
+}
+
+.heatmap-cell.empty {
+  min-height: 58px;
+  background: repeating-linear-gradient(135deg, transparent 0 6px, rgb(19 36 74 / 0.5) 6px 7px);
+  border: 1px solid rgb(19 36 74 / 0.6);
+}
+
+.heatmap-total {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.heat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.heat-legend-bar {
+  width: 140px;
+  height: 8px;
+  background: linear-gradient(90deg, var(--loss), rgb(30 41 66), var(--gain));
+  border-radius: 4px;
+}
+
+.heat-legend-low {
+  margin-left: auto;
+}
+
+/* Calendrier façon GitHub */
+.calendar-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
+  gap: 24px;
+  align-items: start;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  .calendar-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.calendar-scroll {
+  padding: 8px 4px;
+  overflow-x: auto;
+}
+
+.calendar {
+  --cal-cell: clamp(16px, 2.4vw, 30px);
+  display: grid;
+  grid-auto-rows: var(--cal-cell);
+  gap: 5px;
+  width: max-content;
+  margin: 0 auto;
+}
+
+.calendar-month {
+  align-self: end;
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.calendar-day-label {
+  align-self: center;
+  padding-right: 8px;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.calendar-cell {
+  width: var(--cal-cell);
+  height: var(--cal-cell);
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.04);
+  border-radius: 6px;
+}
+
+.calendar-cell:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.calendar-cell.traded:hover {
+  box-shadow: 0 0 0 2px var(--violet), 0 0 18px var(--violet-glow);
+}
+
+.calendar-cell.today {
+  outline: 2px solid var(--electric);
+  outline-offset: 1px;
+}
+
+.calendar-cell.outside {
+  visibility: hidden;
+}
+
+.calendar-months {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.month-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 12px;
+  font-size: 0.88rem;
+  text-align: left;
+  text-transform: capitalize;
+  color: var(--text);
+  background: var(--black);
+  border: 1px solid var(--navy-light);
+  border-radius: 10px;
+}
+
+.month-row:hover:not(:disabled) {
+  background: var(--navy-light);
+  border-color: var(--violet);
+  box-shadow: 0 0 14px rgb(168 85 247 / 0.2);
+}
+
+.month-row.active {
+  background: linear-gradient(135deg, rgb(47 125 255 / 0.25), rgb(168 85 247 / 0.25));
+  border-color: var(--violet);
+}
+
+.small-note {
+  font-size: 0.75rem;
+}
+
+/* --- Panneau latéral des trades --- */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgb(5 7 13 / 0.55);
+  backdrop-filter: blur(3px);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 100vw);
+  background: linear-gradient(180deg, rgb(168 85 247 / 0.08), transparent 30%), var(--navy);
+  border-left: 1px solid rgb(168 85 247 / 0.4);
+  box-shadow: -20px 0 60px rgb(0 0 0 / 0.5);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid var(--navy-light);
+}
+
+.drawer-header h3 {
+  margin: 0;
+}
+
+.drawer-header h3::first-letter {
+  text-transform: uppercase;
+}
+
+.drawer-header p {
+  margin: 6px 0 0;
+}
+
+.drawer-list {
+  flex: 1;
+  margin: 0;
+  padding: 12px;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.drawer-trade {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--black);
+  border: 1px solid var(--navy-light);
+  border-radius: 10px;
+  transition: border-color 0.2s, transform 0.2s var(--ease-out), box-shadow 0.2s;
+}
+
+.drawer-trade:hover {
+  border-color: var(--violet);
+  box-shadow: 0 0 16px rgb(168 85 247 / 0.2);
+  transform: translateX(-4px);
+}
+
+.drawer-trade > span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.85rem;
+}
+
 /* Moins de mouvement si l'ordinateur le demande (réglage d'accessibilité). */
 @media (prefers-reduced-motion: reduce) {
   body::before,

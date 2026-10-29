@@ -1,7 +1,10 @@
+import { CRITERION_KEYS, DIMENSION_BY_KEY, type CriterionKey, type DimensionKey } from './dimensions'
 import { brusselsDay, type Trade } from './trades'
 
+export { SESSION_ORDER } from './dimensions'
+
 // Filtre global, partagé par tous les écrans et gardé dans l'adresse de la page :
-// /analyses?du=2026-05-01&instrument=NQ1!&session=NY-1&sens=BUY&trades=pris
+// /analyses?du=2026-05-01&instrument=NQ1!&session=NY-1&sens=BUY&trades=pris&jour=Mardi
 export type Filters = {
   from: string | null // AAAA-MM-JJ, heure de Bruxelles, inclus
   to: string | null
@@ -9,6 +12,8 @@ export type Filters = {
   sessions: string[]
   direction: 'BUY' | 'SELL' | null
   taken: 'pris' | 'non-pris' | null
+  // Critères appliqués depuis l'écran Analyses (jour, HTF, émotions…), une valeur par critère.
+  criteria: Partial<Record<CriterionKey, string>>
 }
 
 export const EMPTY_FILTERS: Filters = {
@@ -18,10 +23,8 @@ export const EMPTY_FILTERS: Filters = {
   sessions: [],
   direction: null,
   taken: null,
+  criteria: {},
 }
-
-// Ordre d'affichage des sessions (celui de la journée, pas l'ordre alphabétique).
-export const SESSION_ORDER = ['London', 'NY-1', 'NY-2', 'NY-3', 'Outside Wo0']
 
 const DATE_FORMAT = /^\d{4}-\d{2}-\d{2}$/
 
@@ -33,6 +36,11 @@ export function parseFilters(params: URLSearchParams): Filters {
   }
   const direction = params.get('sens')
   const taken = params.get('trades')
+  const criteria: Filters['criteria'] = {}
+  for (const key of CRITERION_KEYS) {
+    const value = params.get(key)
+    if (value) criteria[key] = value
+  }
   return {
     from: date('du'),
     to: date('au'),
@@ -40,6 +48,7 @@ export function parseFilters(params: URLSearchParams): Filters {
     sessions: list('session'),
     direction: direction === 'BUY' || direction === 'SELL' ? direction : null,
     taken: taken === 'pris' || taken === 'non-pris' ? taken : null,
+    criteria,
   }
 }
 
@@ -51,6 +60,10 @@ export function serializeFilters(filters: Filters): URLSearchParams {
   if (filters.sessions.length) params.set('session', filters.sessions.join(','))
   if (filters.direction) params.set('sens', filters.direction)
   if (filters.taken) params.set('trades', filters.taken)
+  for (const key of CRITERION_KEYS) {
+    const value = filters.criteria[key]
+    if (value) params.set(key, value)
+  }
   return params
 }
 
@@ -68,6 +81,10 @@ export function applyFilters(trades: Trade[], filters: Filters): Trade[] {
     if (filters.direction && t.direction !== filters.direction) return false
     if (filters.taken === 'pris' && !t.taken) return false
     if (filters.taken === 'non-pris' && t.taken) return false
+    for (const key of CRITERION_KEYS) {
+      const value = filters.criteria[key]
+      if (value && DIMENSION_BY_KEY[key].get(t) !== value) return false
+    }
     return true
   })
 }
@@ -79,8 +96,60 @@ export function countActiveFilters(filters: Filters): number {
     Number(filters.instruments.length > 0) +
     Number(filters.sessions.length > 0) +
     Number(filters.direction !== null) +
-    Number(filters.taken !== null)
+    Number(filters.taken !== null) +
+    CRITERION_KEYS.filter((k) => filters.criteria[k]).length
   )
+}
+
+// Filtre sur une seule valeur d'une dimension (clic sur une barre de croisement).
+export function withDimension(filters: Filters, key: DimensionKey, value: string): Filters {
+  switch (key) {
+    case 'instrument':
+      return { ...filters, instruments: [value] }
+    case 'session':
+      return { ...filters, sessions: [value] }
+    case 'sens':
+      return { ...filters, direction: value === 'SELL' ? 'SELL' : 'BUY' }
+    case 'pris':
+      return { ...filters, taken: value === 'Non pris' ? 'non-pris' : 'pris' }
+    default:
+      return { ...filters, criteria: { ...filters.criteria, [key]: value } }
+  }
+}
+
+// La dimension est-elle filtrée sur exactement cette valeur ?
+export function hasDimension(filters: Filters, key: DimensionKey, value: string): boolean {
+  switch (key) {
+    case 'instrument':
+      return filters.instruments.length === 1 && filters.instruments[0] === value
+    case 'session':
+      return filters.sessions.length === 1 && filters.sessions[0] === value
+    case 'sens':
+      return filters.direction === value
+    case 'pris':
+      return filters.taken === (value === 'Non pris' ? 'non-pris' : 'pris')
+    default:
+      return filters.criteria[key] === value
+  }
+}
+
+// Retire le filtre d'une dimension.
+export function withoutDimension(filters: Filters, key: DimensionKey): Filters {
+  switch (key) {
+    case 'instrument':
+      return { ...filters, instruments: [] }
+    case 'session':
+      return { ...filters, sessions: [] }
+    case 'sens':
+      return { ...filters, direction: null }
+    case 'pris':
+      return { ...filters, taken: null }
+    default: {
+      const criteria = { ...filters.criteria }
+      delete criteria[key]
+      return { ...filters, criteria }
+    }
+  }
 }
 
 export type PeriodPreset = 'tout' | '30j' | '3m' | 'annee'
