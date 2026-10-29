@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { useSync } from '../lib/queries'
 import { ActiveFilters } from './ActiveFilters'
+import { CommandPalette } from './CommandPalette'
 import { FilterMenu } from './FilterMenu'
 import { Toasts, type ToastItem } from './Toasts'
 
@@ -12,6 +13,7 @@ const NAV = [
   { to: '/', label: "Vue d'ensemble" },
   { to: '/analyses', label: 'Analyses' },
   { to: '/galerie', label: 'Galerie' },
+  { to: '/comparer', label: 'Comparer' },
 ]
 
 // Cadre commun à tous les écrans : barre du haut, puis l'écran demandé, avec une transition entre écrans.
@@ -22,6 +24,7 @@ export function Layout({ email }: { email: string }) {
   const queryClient = useQueryClient()
   const sync = useSync()
   const [toasts, setToasts] = useState<ToastItem[]>([])
+  const [paletteOpen, setPaletteOpen] = useState(false)
 
   const dismiss = useCallback((id: number) => setToasts((ts) => ts.filter((t) => t.id !== id)), [])
   const notify = (toast: Omit<ToastItem, 'id'>) => setToasts((ts) => [...ts, { ...toast, id: Date.now() }])
@@ -72,6 +75,9 @@ export function Layout({ email }: { email: string }) {
           </nav>
         </div>
         <div className="topbar-actions">
+          <button type="button" className="secondary search-trigger" onClick={() => setPaletteOpen(true)}>
+            <span aria-hidden="true">⌕</span> Rechercher <kbd>Ctrl K</kbd>
+          </button>
           <FilterMenu />
           <button className="sync-button" onClick={runSync} disabled={sync.isPending}>
             <svg className={sync.isPending ? 'spin' : ''} viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
@@ -109,6 +115,7 @@ export function Layout({ email }: { email: string }) {
       </main>
 
       <Toasts items={toasts} onDismiss={dismiss} />
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} onSync={runSync} />
     </>
   )
 }

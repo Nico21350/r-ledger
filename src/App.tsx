@@ -8,6 +8,7 @@ import { OverviewPage } from './pages/OverviewPage'
 import { AnalysesPage } from './pages/AnalysesPage'
 import { GalleryPage } from './pages/GalleryPage'
 import { TradePage } from './pages/TradePage'
+import { ComparePage } from './pages/ComparePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
         <Route path="analyses" element={<AnalysesPage />} />
         <Route path="galerie" element={<GalleryPage />} />
         <Route path="trade/:id" element={<TradePage />} />
+        <Route path="comparer/:a?/:b?" element={<ComparePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
