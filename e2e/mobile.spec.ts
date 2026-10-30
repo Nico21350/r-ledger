@@ -47,6 +47,27 @@ for (const path of ['/', '/analyses', '/trade/t11']) {
   })
 }
 
+test('galerie sur téléphone : sélecteurs sur une ligne, plein écran au glissement du doigt', async ({ page }) => {
+  await page.goto('/galerie')
+  // Chaque sélecteur tient sur une seule ligne (hauteur d'un seul bouton).
+  for (const selector of await page.locator('.gallery-toolbar .segmented').all()) {
+    expect((await selector.boundingBox())!.height).toBeLessThan(50)
+  }
+  await page.locator('.gallery-item').first().click()
+  const counter = page.locator('.lightbox-bar .toolbar .muted')
+  await expect(counter).toHaveText('1 / 2')
+  await expect(page.locator('.lightbox-hint')).toHaveText(/Glisse pour changer de capture/)
+  // Glissement vers la gauche : capture suivante.
+  const box = (await page.locator('.lightbox-image').boundingBox())!
+  const y = box.y + box.height / 2
+  await page.mouse.move(box.x + box.width * 0.8, y)
+  await page.mouse.down()
+  await page.mouse.move(box.x + box.width * 0.5, y, { steps: 8 })
+  await page.mouse.move(box.x + box.width * 0.2, y, { steps: 8 })
+  await page.mouse.up()
+  await expect(counter).toHaveText('2 / 2')
+})
+
 test('la barre du haut garde ses boutons sur téléphone', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: 'Rechercher' })).toBeVisible()

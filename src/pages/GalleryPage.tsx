@@ -75,13 +75,14 @@ export function GalleryPage() {
       <div className="page-header">
         <div>
           <h2>Galerie</h2>
+          <p className="panel-lede">Les captures d'écran des graphiques, regroupées par jour de trading.</p>
           <p className="muted">
             {captures.isPending
               ? 'Chargement des captures…'
               : `${days.length} jour${days.length > 1 ? 's' : ''} · ${captureCount} capture${captureCount > 1 ? 's' : ''}`}
           </p>
         </div>
-        <div className="toolbar">
+        <div className="toolbar gallery-toolbar">
           <Segmented id="gallery-outcome" label="Résultat" options={OUTCOMES} value={outcome} onChange={setOutcome} />
           <Segmented id="gallery-sort" label="Ordre" options={SORTS} value={sort} onChange={setSort} />
         </div>

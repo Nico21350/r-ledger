@@ -7,7 +7,12 @@ import { formatDate, formatR, rClass, type Trade } from '../lib/trades'
 
 export type LightboxItem = { capture: Capture; trade: Trade }
 
-// Capture en plein écran : flèches ← → (souris ou clavier), Échap pour fermer, clic pour zoomer.
+// Écran tactile (téléphone, tablette) : on change de capture en la faisant glisser du doigt.
+const touch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+// Distance de glissement (en pixels) à partir de laquelle on passe à la capture voisine.
+const SWIPE = 60
+
+// Capture en plein écran : flèches ← → (souris ou clavier) ou glissement du doigt, Échap pour fermer, clic pour zoomer.
 export function Lightbox({
   items,
   index,
@@ -23,6 +28,8 @@ export function Lightbox({
   const [zoomed, setZoomed] = useState(false)
   const [direction, setDirection] = useState(0)
   const thumbsRef = useRef<HTMLDivElement>(null)
+  // Vrai juste après un glissement : le « clic » qui le termine ne doit pas zoomer.
+  const swiped = useRef(false)
   const open = index !== null && items[index] !== undefined
   const item = open ? items[index] : null
 
@@ -128,10 +135,23 @@ export function Lightbox({
                 animate={zoomed ? { opacity: 1, x: 0, scale: 2 } : 'center'}
                 exit="exit"
                 transition={{ type: 'spring', stiffness: 320, damping: 32 }}
-                drag={zoomed}
+                // Zoomée : on la déplace librement. Sinon : glissement horizontal vers la capture voisine.
+                drag={zoomed ? true : items.length > 1 ? 'x' : false}
+                dragConstraints={zoomed ? undefined : { left: 0, right: 0 }}
+                dragElastic={zoomed ? undefined : 0.6}
                 dragMomentum={false}
+                onDragStart={() => {
+                  swiped.current = true
+                }}
+                onDragEnd={(_, info) => {
+                  if (!zoomed && Math.abs(info.offset.x) > SWIPE) go(info.offset.x < 0 ? 1 : -1)
+                }}
                 onClick={(e) => {
                   e.stopPropagation()
+                  if (swiped.current) {
+                    swiped.current = false
+                    return
+                  }
                   setZoomed((z) => !z)
                 }}
                 draggable={false}
@@ -171,7 +191,11 @@ export function Lightbox({
               ))}
             </div>
           )}
-          <p className="lightbox-hint">← → pour naviguer · clic ou Espace pour zoomer · glisser pour se déplacer</p>
+          <p className="lightbox-hint">
+            {touch
+              ? 'Glisse pour changer de capture · touche pour zoomer'
+              : '← → ou glisser pour naviguer · clic ou Espace pour zoomer · glisser pour se déplacer dans le zoom'}
+          </p>
         </motion.div>
       )}
     </AnimatePresence>,

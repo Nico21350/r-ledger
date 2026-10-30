@@ -1652,6 +1652,8 @@ kbd {
   position: relative;
   flex: 1;
   display: grid;
+  /* Une case de taille fixe (la place restante) : la capture s'y ajuste en entier, sans être coupée. */
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
   place-items: center;
   min-height: 0;
   padding: 16px 72px;
@@ -3068,6 +3070,19 @@ main:focus {
 
   .segmented {
     flex-wrap: wrap;
+  }
+
+  /* Galerie : chaque sélecteur sur une seule ligne, qu'on fait glisser sur le côté si besoin. */
+  .gallery-toolbar .segmented {
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .gallery-toolbar .segmented button {
+    flex: none;
+    white-space: nowrap;
   }
 
   /* Constats : une rangée qu'on fait glisser du doigt, la carte suivante dépasse sur le côté. */
