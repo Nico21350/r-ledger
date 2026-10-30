@@ -1768,7 +1768,18 @@ kbd {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
-  align-items: start;
+}
+
+/* Les deux cartes ont la même hauteur ; « Ouvrir la fiche » est aligné en bas. */
+.compare-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.compare-body .link-button {
+  margin-top: auto;
+  align-self: flex-start;
 }
 
 @media (max-width: 900px) {
@@ -1818,6 +1829,12 @@ kbd {
   text-align: center;
 }
 
+.compare-placeholder {
+  margin-bottom: 12px;
+  border: 1px solid var(--navy-light);
+  border-radius: 14px;
+}
+
 .compare-shots {
   display: flex;
   flex-direction: column;
@@ -1831,9 +1848,20 @@ kbd {
   gap: 8px;
 }
 
-.compare-table td,
-.compare-table th {
+/* Colonnes fixes : chaque colonne de valeurs reste sous la carte de son trade. */
+.compare-table {
+  table-layout: fixed;
+}
+
+.compare-label-col {
+  width: 22%;
+}
+
+.data-table.compare-table td,
+.data-table.compare-table th {
+  padding: 8px 12px;
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .compare-table tbody tr {

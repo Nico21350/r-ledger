@@ -165,6 +165,18 @@ test.describe('connecté', () => {
     await expect(page).toHaveURL(/\/comparer\/t11\/t10/)
   })
 
+  test('comparer sans choix : meilleur contre pire trade ; « Seulement les différences » replie le reste', async ({ page }) => {
+    await page.goto('/comparer')
+    await expect(page.getByText(/Meilleur trade contre pire trade/)).toBeVisible()
+    // Parmi les trades avec captures (t10 et t11) : t11 (+3,5 R) contre t10 (+2 R).
+    await expect(page.locator('.compare-r')).toHaveText(['+3,5 R', '+2 R'])
+    const rows = page.locator('.compare-table tbody tr')
+    await expect(rows).toHaveCount(13)
+    await page.getByRole('switch', { name: 'Seulement les différences' }).click()
+    await expect(rows.and(page.locator(':not(.different)'))).toHaveCount(0)
+    expect(await rows.count()).toBeLessThan(13)
+  })
+
   test('export CSV des trades filtrés', async ({ page }) => {
     await page.goto('/')
     await page.locator('.hero-value').waitFor()
