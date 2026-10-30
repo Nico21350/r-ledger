@@ -3007,6 +3007,48 @@ main:focus {
   display: none;
 }
 
+/* --- Boutons secondaires mis en avant (un cran sous « Personnaliser ») ---
+   Dans le contenu des pages, le plein écran et le panneau latéral : fond bleu → mauve léger, bordure bleue, texte blanc.
+   Les sélecteurs (Tous / Gains / Pertes…) et la barre du haut gardent leur style. */
+.page button.secondary,
+.page a.button.secondary,
+.lightbox button.secondary,
+.lightbox a.button.secondary,
+.drawer button.secondary,
+.section-nav a,
+.page .link-button:not(.back) {
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+  background: linear-gradient(135deg, rgb(47 125 255 / 0.24), rgb(168 85 247 / 0.24));
+  border: 1px solid rgb(47 125 255 / 0.75);
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgb(47 125 255 / 0.15);
+}
+
+.section-nav a,
+.page .link-button:not(.back) {
+  border-radius: 999px;
+}
+
+.page .link-button:not(.back) {
+  display: inline-flex;
+  padding: 5px 12px;
+}
+
+.page button.secondary:hover:not(:disabled),
+.page a.button.secondary:hover,
+.lightbox button.secondary:hover:not(:disabled),
+.lightbox a.button.secondary:hover,
+.drawer button.secondary:hover:not(:disabled),
+.section-nav a:hover,
+.page .link-button:not(.back):hover:not(:disabled) {
+  color: #fff;
+  background: linear-gradient(135deg, rgb(47 125 255 / 0.34), rgb(168 85 247 / 0.34));
+  border-color: var(--violet);
+  box-shadow: 0 0 16px rgb(168 85 247 / 0.3);
+}
+
 /* --- Petits écrans (téléphone) --- */
 @media (max-width: 760px) {
   .topbar {
