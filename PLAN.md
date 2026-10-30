@@ -46,16 +46,17 @@ Contenu des pages : captures TradingView (images) et parfois une review écrite,
 - La synchronisation est relançable : elle ajoute les nouveaux trades et met à jour ceux modifiés, en se basant sur l'ID de page Notion
 
 ## Écrans
-1. Vue d'ensemble : total, indicateurs, constats automatiques, courbe des R cumulés
-2. Analyses : croisements sur chaque colonne, jour × session, répartition des R, calendrier, RR atteignable, effet du BE, setups, Monte-Carlo
+1. Vue d'ensemble (épurée) : total avec explication du R, point fort / point faible, courbe des R cumulés avec 1 à 5 indicateurs au choix, derniers trades
+2. Analyses : constats, croisements sur chaque colonne, jour × session, répartition des R, calendrier, RR atteignable, effet du BE, setups, Monte-Carlo, tous les indicateurs
 3. Galerie des captures, regroupées par jour
-4. Fiche trade : propriétés, captures, review ; comparaison de deux trades ; recherche Ctrl+K
+4. Fiche trade : propriétés, captures, review ; comparaison de deux trades (meilleur contre pire par défaut) ; recherche Ctrl+K
 
 ## Design
 Bleu marine, bleu électrique, noir, avec un accent mauve électrique (#a855f7) utilisé en duo avec le bleu
 (dégradés de la courbe, halo de fond, logo, onglet actif, titres de section, zone mise en avant).
 Gains en vert, pertes en rouge (le mauve ne sert jamais pour un gain ou une perte).
-Page large (jusqu'à 1 880 px) : courbe des R en vedette à gauche, cartes Performance et Risque à droite.
+Page large (jusqu'à 1 880 px) : courbe des R en vedette à gauche, indicateurs choisis à droite.
+Valeurs neutres des indicateurs (ni gain ni perte) en mauve. Sous chaque titre de section, une phrase simple en mauve clair.
 Ligne directrice : interface dynamique (transitions fluides, éléments cliquables).
 
 ## Étapes
@@ -125,3 +126,19 @@ Site : https://r-ledger-seven.vercel.app (Vercel, déployé automatiquement à c
   secrets GitHub SUPABASE_URL et SUPABASE_PUBLISHABLE_KEY).
 - FAIT : hébergement Vercel (variables VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY, VITE_DEMO_EMAIL, VITE_DEMO_PASSWORD),
   Site URL et Redirect URLs réglés dans Supabase Auth.
+
+### Vue d'ensemble épurée et finitions page par page. FAIT
+- Vue d'ensemble : explication du R sous le total ; constats réduits à une ligne (point fort, point faible) avec lien
+  vers les Analyses ; 1 à 5 indicateurs au choix parmi 14 (« Personnaliser », mémorisé dans le navigateur, valeurs par
+  défaut si la mémoire est indisponible), chacun avec quelques mots d'explication ; derniers trades avec capture.
+  Retirés : section Régularité, forme récente (supprimée), indicateurs non choisis (tous visibles dans Analyses).
+- Analyses : constats en tête, panneau « Tous les indicateurs » (« Voir sur la courbe » ramène à la vue d'ensemble
+  zoomée), une phrase d'explication sous chaque titre.
+- Galerie : capture entière en plein écran, glissement du doigt pour changer de capture, sélecteurs sur une ligne sur téléphone.
+- Comparer : meilleur contre pire trade par défaut (parmi ceux qui ont des captures), interrupteur « Seulement les
+  différences », cartes de même hauteur.
+- Corrections : bulles d'explication placées sur la page entière (jamais coupées ni hors écran) ; valeurs des barres
+  négatives à droite du zéro ; graduations rondes et vrai signe moins sur les axes (src/lib/axis.ts) ; étiquettes de
+  graphiques qui ne débordent plus ; barre du haut sur téléphone ; curseur « interdit » sur les boutons désactivés.
+- Tests : choix des indicateurs, derniers trades, comparaison, glissement en plein écran, bulles dans l'écran, et
+  absence de texte de graphique qui se chevauche (e2e/overlap.ts). Port des tests de bout en bout : 5199.

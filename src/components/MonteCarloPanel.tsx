@@ -14,7 +14,7 @@ import {
   YAxis,
 } from 'recharts'
 import { riseIn, stagger } from '../lib/motion'
-import { axisR } from '../lib/axis'
+import { axisR, niceTicks } from '../lib/axis'
 import { quantile, simulate, streakProbability, type Mode } from '../lib/montecarlo'
 import { themeColors } from '../lib/theme'
 import { formatPercent, formatR, rClass, type Trade } from '../lib/trades'
@@ -29,7 +29,6 @@ const MODES: { value: Mode; label: string }[] = [
   { value: 'tirage', label: 'Tirer au sort' },
 ]
 
-const axisR0 = (v: number) => axisR(v, 0)
 
 // 1 000 versions possibles de ton parcours : même trades dans un autre ordre, ou trades tirés au sort parmi les tiens.
 export function MonteCarloPanel({ trades }: { trades: Trade[] }) {
@@ -59,6 +58,8 @@ export function MonteCarloPanel({ trades }: { trades: Trade[] }) {
     inner: [b.p25, b.p75],
     actual: b.index < actual.length ? actual[b.index] : undefined,
   }))
+  // Axe vertical : graduations rondes couvrant toute la zone des simulations et le vrai parcours.
+  const yAxis = niceTicks(Math.min(0, ...sim.bands.map((b) => b.p5), ...actual), Math.max(0, ...sim.bands.map((b) => b.p95), ...actual))
   const streakBars = Array.from({ length: Math.min(maxStreak, 12) }, (_, i) => ({
     length: i + 1,
     probability: streakProbability(sim, i + 1),
@@ -158,7 +159,16 @@ export function MonteCarloPanel({ trades }: { trades: Trade[] }) {
               </defs>
               <CartesianGrid stroke={c.grid} strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="index" stroke={c.muted} tick={{ fill: c.muted, fontSize: 12 }} tickLine={false} />
-              <YAxis stroke={c.muted} tick={{ fill: c.muted, fontSize: 12 }} tickLine={false} axisLine={false} width={52} tickFormatter={axisR0} />
+              <YAxis
+                stroke={c.muted}
+                tick={{ fill: c.muted, fontSize: 12 }}
+                tickLine={false}
+                axisLine={false}
+                width={52}
+                domain={[yAxis.ticks[0], yAxis.ticks.at(-1)!]}
+                ticks={yAxis.ticks}
+                tickFormatter={(v: number) => axisR(v, yAxis.decimals)}
+              />
               <Tooltip content={<FanTooltip />} cursor={{ stroke: c.muted, strokeDasharray: '3 3' }} />
               <Area type="monotone" dataKey="outer" stroke="none" fill="url(#mc-outer)" animationDuration={800} />
               <Area type="monotone" dataKey="inner" stroke="none" fill={c.violet} fillOpacity={0.28} animationDuration={800} />

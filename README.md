@@ -6,43 +6,51 @@
 
 Les trades sont saisis dans Notion. R Ledger les importe dans Supabase avec leurs captures TradingView, puis montre ce que Notion ne sait pas faire : courbe des R interactive, croisements sur chaque critère, chercheur de setups, simulation de Monte-Carlo, galerie de captures…
 
-![Démonstration : zoom sur la plus forte baisse, fiche trade, croisements, plein écran des captures](docs/demo.gif)
+![Démonstration : zoom sur la plus forte baisse, indicateurs personnalisables, croisements, plein écran des captures](docs/demo.gif)
 
 ---
 
 ## Fonctionnalités
 
 ### Vue d'ensemble
-Total de la période, 14 indicateurs (espérance, profit factor, SQN, recovery factor…) comparés à la période précédente, et **constats rédigés automatiquement** (« ton point fort », « meilleur setup », « baisse à prévoir »), cliquables.
+Une page volontairement épurée, lisible sans connaître le trading :
+- **total de la période** en R, avec une ligne qui explique ce qu'est un R ;
+- **point fort et point faible** rédigés automatiquement, sur une ligne (cliquables : ils filtrent l'application) ;
+- **courbe des R cumulés** et, à côté, **jusqu'à 5 indicateurs au choix** parmi 14 (bouton « Personnaliser », choix gardé dans le navigateur), chacun avec quelques mots d'explication et sa comparaison avec la période précédente ;
+- **derniers trades** avec leur capture.
 
 ![Vue d'ensemble](docs/screenshots/vue-ensemble.jpg)
 
-Courbe des R cumulés avec drawdown synchronisé, séries de gains et de pertes surlignées, barre de zoom glissable. Un clic sur une carte (plus forte baisse, plus longue série) zoome la courbe sur le passage concerné ; un clic sur un point ouvre la fiche du trade.
+Courbe avec drawdown synchronisé, séries de gains et de pertes surlignées, barre de zoom glissable. Un clic sur une carte (plus forte baisse, plus longue série) zoome la courbe sur le passage concerné ; un clic sur un point ouvre la fiche du trade.
 
 ![Courbe des R cumulés](docs/screenshots/courbe.jpg)
 
 ### Analyses
+Chaque section commence par une phrase simple qui dit ce qu'elle montre.
+- **Constats** rédigés automatiquement (« ton point fort », « meilleur setup », « baisse à prévoir »), cliquables.
 - **Croisements** sur 12 colonnes Notion (session, jour, HTF/LTF, FVG, SL, TP, émotions…) : graphique cliquable qui filtre toute l'application, tableau triable, panneau latéral avec les trades.
 - **Carte de chaleur** jour × session (ou heure de Bruxelles), **histogramme** des R, **calendrier** façon GitHub.
 - **RR closed contre Achievable RR** : R laissés sur la table et taux de capture (lecture automatique d'un champ texte libre : « RR4 », « Full at 2, Runner at 3 »…).
 - **Effet du stop à BE** : R sauvés contre R manqués.
 - **Chercheur de setups** : combinaison de critères en direct et classement automatique des combinaisons d'un ou deux critères.
 - **Monte-Carlo** : 1 000 parcours (mélange de l'ordre ou tirage au sort), éventail des R cumulés, baisse à prévoir à 95 %, probabilité d'enchaîner N pertes.
+- **Tous les indicateurs** : les 14, par famille (performance, risque, régularité).
 - Toute stat calculée sur **moins de 5 trades** est marquée « peu fiable ».
 
 ![Croisements](docs/screenshots/croisements.jpg)
 ![Jour × session et répartition des R](docs/screenshots/jour-session.jpg)
 ![Simulation de Monte-Carlo](docs/screenshots/monte-carlo.jpg)
 
-### Galerie, fiches trade, recherche
-Galerie des captures regroupées par jour, plein écran au clavier (← →, zoom, miniatures), fiche trade avec navigation précédent / suivant, comparaison de deux trades côte à côte, recherche rapide **Ctrl+K**.
+### Galerie, fiches trade, comparaison, recherche
+Galerie des captures regroupées par jour, plein écran au clavier ou au glissement du doigt (← →, zoom, miniatures), fiche trade avec navigation précédent / suivant, comparaison de deux trades côte à côte (meilleur contre pire trade par défaut, filtre « Seulement les différences »), recherche rapide **Ctrl+K**.
 
 ![Galerie](docs/screenshots/galerie.jpg)
 ![Fiche trade](docs/screenshots/fiche-trade.jpg)
+![Comparaison de deux trades](docs/screenshots/comparer.jpg)
 ![Recherche Ctrl+K](docs/screenshots/recherche.jpg)
 
 ### Et aussi
-Filtre global gardé dans l'adresse de la page (une vue filtrée se partage par lien), export **CSV** (prêt pour Excel en français) et **PDF** (mise en page d'impression dédiée), affichage téléphone, navigation au clavier, animations désactivées si le système le demande.
+Filtre global gardé dans l'adresse de la page (une vue filtrée se partage par lien), export **CSV** (prêt pour Excel en français) et **PDF** (mise en page d'impression dédiée), affichage téléphone, navigation au clavier, bulles d'explication qui restent toujours dans l'écran, animations désactivées si le système le demande.
 
 ---
 
@@ -70,14 +78,15 @@ flowchart LR
 | Données | Supabase (Postgres, Auth, Storage, Edge Functions), TanStack Query |
 | Navigation | React Router (une adresse par écran, filtres dans l'adresse) |
 | Graphiques et animations | Recharts, Motion |
-| Qualité | Vitest (63 tests des calculs), Playwright (20 tests de bout en bout), oxlint, types générés depuis la base |
+| Qualité | Vitest (70 tests des calculs), Playwright (32 tests de bout en bout, ordinateur et téléphone), oxlint, types générés depuis la base |
 
 ## Choix techniques
 
 - **Tout est en R.** Aucune devise n'est stockée ni affichée ; un test de bout en bout vérifie sur chaque écran qu'aucun montant (« $ », « € ») n'apparaît.
 - **Calculs isolés et testés.** Statistiques, croisements, Monte-Carlo (générateur aléatoire à graine, résultats reproductibles), constats et export CSV vivent dans `src/lib/`, sans dépendance à l'interface.
+- **Graphiques lisibles à toutes les tailles.** Graduations « rondes » calculées (jamais deux fois le même libellé) et test automatique qui vérifie, pour chaque critère des croisements, sur ordinateur et téléphone, qu'aucun texte de graphique n'en chevauche un autre.
 - **Tests de bout en bout sans vraie base.** Playwright lance l'application avec une fausse adresse Supabase et répond à sa place avec des données fictives : aucun mot de passe ni donnée réelle dans les tests, et tout accès à Internet est bloqué pendant les tests.
-- **Chargement léger.** Chaque écran et chaque grosse bibliothèque est un fichier séparé (le code propre à l'application pèse 64 ko).
+- **Chargement léger.** Chaque écran et chaque grosse bibliothèque est un fichier séparé (le fichier de démarrage de l'application pèse 65 ko).
 
 ## Lancer le projet
 
@@ -105,7 +114,7 @@ Base de données : exécuter `supabase/schema.sql` dans l'éditeur SQL de Supaba
 src/
   pages/        un fichier par écran (vue d'ensemble, analyses, galerie, fiche, comparaison)
   components/   panneaux, graphiques, plein écran, recherche Ctrl+K…
-  lib/          calculs testés : stats, analyses, Monte-Carlo, setups, constats, filtres, CSV
+  lib/          calculs testés : stats, analyses, Monte-Carlo, setups, constats, indicateurs, axes, filtres, CSV
 supabase/
   schema.sql    tables, colonnes calculées, sécurité (RLS), Storage
   functions/    synchronisation Notion → Supabase
