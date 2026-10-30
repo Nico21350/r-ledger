@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { mockSupabase, signIn } from './fixtures.ts'
+import { textOverlaps } from './overlap.ts'
 
 // Noms des cartes d'indicateurs, suivis du « i » de leur bulle d'explication.
 const labels = (...names: string[]) => names.map((n) => new RegExp(`^${n}i?$`))
@@ -82,6 +83,38 @@ test.describe('connecté', () => {
     await page.keyboard.press('ArrowLeft')
     await expect(page).toHaveURL(/\/trade\/t10/)
     await expect(page.locator('.trade-hero .hero-value')).toHaveText('+2 R')
+  })
+
+  test('« Voir tous les constats » mène aux constats des Analyses ; les 14 indicateurs y sont', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('link', { name: 'Voir tous les constats →' }).click()
+    await expect(page).toHaveURL(/\/analyses.*#constats/)
+    await expect(page.getByRole('heading', { name: 'Constats' })).toBeVisible()
+    await expect(page.locator('#croisements .panel-lede')).toHaveText('Les résultats découpés selon chaque critère noté dans le journal.')
+    await expect(page.locator('#indicateurs .tile')).toHaveCount(14)
+    await expect(page.getByText('Forme récente')).toHaveCount(0)
+  })
+
+  test('Analyses : « Voir sur la courbe » ramène à la vue d’ensemble, zoomée sur le passage', async ({ page }) => {
+    await page.goto('/analyses')
+    await page.locator('#indicateurs .tile', { hasText: 'Série gagnante max' }).getByRole('button', { name: /Voir sur la courbe/ }).click()
+    await expect(page).toHaveURL(/localhost:\d+\/$/)
+    await expect(page.getByText(/Plus longue série gagnante : trades n°/)).toBeVisible()
+  })
+
+  test('aucun texte de graphique ne se chevauche, pour chaque critère des Croisements', async ({ page }) => {
+    test.setTimeout(120_000) // 36 combinaisons, chacune avec son animation
+    await page.goto('/analyses')
+    const chips = page.locator('#croisements .dim-chip')
+    await expect(chips.first()).toBeVisible()
+    for (const metric of ['Total R', 'Espérance', 'Win rate']) {
+      await page.locator('#croisements').getByRole('radio', { name: metric }).click()
+      for (const chip of await chips.all()) {
+        await chip.click()
+        await page.waitForTimeout(700) // fin de l'animation des barres
+        expect(await textOverlaps(page), `${await chip.innerText()} / ${metric}`).toEqual([])
+      }
+    }
   })
 
   test('Analyses : croisements, tri, et liste des trades dans le panneau latéral', async ({ page }) => {

@@ -8,6 +8,8 @@ import { CrossingsPanel } from '../components/CrossingsPanel'
 import { ExportButtons } from '../components/ExportButtons'
 import { HeatmapPanel } from '../components/HeatmapPanel'
 import { HistogramPanel } from '../components/HistogramPanel'
+import { IndicatorsPanel } from '../components/IndicatorsPanel'
+import { InsightsPanel } from '../components/InsightsPanel'
 import { MonteCarloPanel } from '../components/MonteCarloPanel'
 import { PageState } from '../components/PageState'
 import { SetupFinder } from '../components/SetupFinder'
@@ -20,6 +22,7 @@ import { riseIn, stagger } from '../lib/motion'
 const SMALL_SAMPLE = 30
 
 const SECTIONS = [
+  { id: 'constats', label: 'Constats' },
   { id: 'croisements', label: 'Croisements' },
   { id: 'jour-session', label: 'Jour × session' },
   { id: 'repartition', label: 'Répartition' },
@@ -28,6 +31,7 @@ const SECTIONS = [
   { id: 'effet-be', label: 'Effet du BE' },
   { id: 'setups', label: 'Setups' },
   { id: 'monte-carlo', label: 'Monte-Carlo' },
+  { id: 'indicateurs', label: 'Indicateurs' },
 ]
 
 export function AnalysesPage() {
@@ -80,6 +84,7 @@ export function AnalysesPage() {
               fiable ».
             </motion.p>
           )}
+          <InsightsPanel trades={trades} />
           <CrossingsPanel trades={trades} onOpen={setDrawer} />
           <div className="analyses-grid">
             <HeatmapPanel trades={trades} onOpen={setDrawer} />
@@ -92,6 +97,7 @@ export function AnalysesPage() {
           </div>
           <SetupFinder trades={trades} onOpen={setDrawer} />
           <MonteCarloPanel trades={trades} />
+          <IndicatorsPanel trades={trades} />
         </motion.div>
       </PageState>
 

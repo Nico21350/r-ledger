@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test'
 import { mockSupabase, signIn } from './fixtures.ts'
+import { textOverlaps } from './overlap.ts'
 
 // Sur téléphone : aucun écran ne doit défiler sur le côté, et la barre du haut reste utilisable.
 test.beforeEach(async ({ context, page }) => {
@@ -34,6 +35,15 @@ for (const path of ['/', '/analyses']) {
       expect(box.x + box.width).toBeLessThanOrEqual(width)
       expect(box.y).toBeGreaterThanOrEqual(0)
     }
+  })
+}
+
+for (const path of ['/', '/analyses', '/trade/t11']) {
+  test(`aucun texte de graphique ne se chevauche : ${path}`, async ({ page }) => {
+    await page.goto(path)
+    await expect(page.locator('main svg').first()).toBeVisible()
+    await page.waitForTimeout(1500) // fin des animations
+    expect(await textOverlaps(page)).toEqual([])
   })
 }
 

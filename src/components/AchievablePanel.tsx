@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { motion } from 'motion/react'
 import { CartesianGrid, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts'
 import { compareAchievable, type RrPoint } from '../lib/analysis'
+import { axisR } from '../lib/axis'
 import { riseIn, stagger } from '../lib/motion'
 import { themeColors } from '../lib/theme'
 import { formatPercent, formatR, rClass, type Trade } from '../lib/trades'
@@ -12,7 +13,6 @@ import type { DrawerContent } from './TradeDrawer'
 // Une bulle = tous les trades qui ont le même couple (atteignable, encaissé) ; plus il y en a, plus elle est grosse.
 type Bubble = { achievable: number; closed: number; left: number; count: number; points: RrPoint[] }
 
-const axisR = (v: number) => `${v.toLocaleString('fr-BE', { maximumFractionDigits: 1 })} R`
 
 // Ce que le marché offrait (Achievable RR) comparé à ce que tu as encaissé (RR closed).
 export function AchievablePanel({ trades, onOpen }: { trades: Trade[]; onOpen: (content: DrawerContent) => void }) {
@@ -34,6 +34,9 @@ export function AchievablePanel({ trades, onOpen }: { trades: Trade[]; onOpen: (
 
   const max = Math.ceil(Math.max(1, ...points.map((p) => Math.max(p.achievable, p.closed))))
   const min = Math.floor(Math.min(0, ...points.map((p) => p.closed)))
+  // Une graduation par R entier (un pas de 2 au-delà de 10 R), sans en sauter.
+  const step = max - min > 10 ? 2 : 1
+  const range = (from: number) => Array.from({ length: Math.floor((max - from) / step) + 1 }, (_, i) => from + i * step)
   const biggest = [...points].filter((p) => p.left > 0).sort((a, b) => b.left - a.left).slice(0, 3)
   const full = bubbles.filter((b) => b.left === 0)
   const partial = bubbles.filter((b) => b.left > 0)
@@ -49,6 +52,7 @@ export function AchievablePanel({ trades, onOpen }: { trades: Trade[]; onOpen: (
             RR closed contre Achievable RR
             <InfoTip text="Chaque bulle compare ce que le marché offrait (Achievable RR, en bas) à ce que tu as encaissé (RR closed, à gauche). Sur la diagonale : tu as tout pris. En dessous : tu as laissé des R sur la table. Clique sur une bulle pour voir ses trades." />
           </h3>
+          <p className="panel-lede">Ce qui a été encaissé, comparé à ce que le marché offrait.</p>
           <p className="muted">
             {points.length} trades comparables (avec un Achievable RR)
             {unreadable > 0 && ` · ${unreadable} texte${unreadable > 1 ? 's' : ''} illisible${unreadable > 1 ? 's' : ''}`}
@@ -84,10 +88,10 @@ export function AchievablePanel({ trades, onOpen }: { trades: Trade[]; onOpen: (
                 dataKey="achievable"
                 name="Atteignable"
                 domain={[0, max]}
-                allowDecimals={false}
+                ticks={range(0)}
                 stroke={c.muted}
                 tick={{ fill: c.muted, fontSize: 12 }}
-                tickFormatter={axisR}
+                tickFormatter={(v: number) => axisR(v)}
                 label={{ value: 'Atteignable', position: 'insideBottomRight', offset: -6, fill: c.muted, fontSize: 11 }}
               />
               <YAxis
@@ -95,11 +99,13 @@ export function AchievablePanel({ trades, onOpen }: { trades: Trade[]; onOpen: (
                 dataKey="closed"
                 name="Encaissé"
                 domain={[min, max]}
-                allowDecimals={false}
+                ticks={range(min)}
                 stroke={c.muted}
                 tick={{ fill: c.muted, fontSize: 12 }}
-                tickFormatter={axisR}
+                tickFormatter={(v: number) => axisR(v)}
                 width={52}
+                // Décalage du bas : la graduation la plus basse ne touche pas le « 0 R » de l'axe horizontal.
+                padding={{ bottom: 14 }}
               />
               <ZAxis type="number" dataKey="count" range={[90, 600]} />
               <ReferenceLine

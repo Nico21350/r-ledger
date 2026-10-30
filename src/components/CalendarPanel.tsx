@@ -54,6 +54,7 @@ export function CalendarPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (co
             Calendrier
             <InfoTip text="Un carré par jour : vert si la journée a rapporté des R, rouge si elle en a coûté, plus vif quand la valeur est grande. Clique sur un jour pour voir ses trades, ou sur un mois pour filtrer l'application sur ce mois." />
           </h3>
+          <p className="panel-lede">Le résultat de chaque journée de trading.</p>
           <p className="muted" aria-live="polite">
             {hovered ? (
               <>

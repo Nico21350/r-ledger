@@ -25,13 +25,14 @@ export function BePanel({ trades, onOpen }: { trades: Trade[]; onOpen: (content:
   const total = trades.length
 
   return (
-    <motion.section className="panel" id="effet-be" variants={riseIn}>
+    <motion.section className="panel panel-fill" id="effet-be" variants={riseIn}>
       <div className="panel-header">
         <div>
           <h3>
             Effet du BE
             <InfoTip text="Une perte évitée compte pour 1 R sauvé (le stop initial aurait été touché). Un gain manqué compte pour son Achievable RR ; s'il n'est pas noté, on prend ton gain moyen de la période." />
           </h3>
+          <p className="panel-lede">Ce que rapporte ou coûte le fait de remonter le stop au prix d'entrée (BE).</p>
           <p className="muted">
             Bilan :{' '}
             <strong className={rClass(net)}>

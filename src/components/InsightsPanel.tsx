@@ -57,6 +57,9 @@ export function InsightsPanel({ trades, compact = false }: { trades: Trade[]; co
         Constats
         <InfoTip text="Rédigés automatiquement à partir des trades sélectionnés. Seuls les groupes d'au moins 5 trades sont pris en compte. Clique sur un constat pour filtrer sur lui ou voir le détail." />
       </motion.h3>
+      <motion.p className="panel-lede" variants={riseIn}>
+        Ce que disent les chiffres, en une phrase chacun.
+      </motion.p>
       <motion.div className="insight-list" variants={stagger}>
         {insights.map((insight) => (
           <motion.button
@@ -65,6 +68,7 @@ export function InsightsPanel({ trades, compact = false }: { trades: Trade[]; co
             className={`insight ${insight.tone}`}
             variants={riseIn}
             whileHover={{ y: -3 }}
+            title={insight.filter ? 'Filtrer sur ce constat' : 'Voir le détail dans les Analyses'}
             onClick={() => open(insight)}
           >
             <span className="insight-icon" aria-hidden="true">
@@ -73,7 +77,6 @@ export function InsightsPanel({ trades, compact = false }: { trades: Trade[]; co
             <span className="insight-body">
               <strong>{insight.title}</strong>
               <span>{insight.text}</span>
-              <span className="insight-action">{insight.filter ? 'Filtrer sur ce constat →' : 'Voir le détail →'}</span>
             </span>
           </motion.button>
         ))}

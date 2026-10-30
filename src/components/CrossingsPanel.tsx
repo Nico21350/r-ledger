@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { Bar, BarChart, CartesianGrid, Cell, LabelList, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useFilters } from '../hooks/useFilters'
 import { groupByDimension, type Group } from '../lib/analysis'
+import { axisR, niceTicks } from '../lib/axis'
 import { DIMENSION_BY_KEY, DIMENSIONS, type DimensionKey } from '../lib/dimensions'
 import { hasDimension, withDimension, withoutDimension } from '../lib/filters'
 import { riseIn } from '../lib/motion'
@@ -77,6 +78,8 @@ export function CrossingsPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
 
   const chartData = groups.map((g) => ({ ...g, name: label(g), metricValue: metricValue(g, metric) }))
   // Largeur réservée aux noms à gauche des barres : juste ce qu'il faut pour le plus long (≈ 7 px par lettre).
+  // Axe des R : graduations rondes, zéro toujours visible (une barre part de 0, jamais du milieu de l'axe).
+  const axis = niceTicks(Math.min(0, ...chartData.map((g) => g.metricValue)), Math.max(0, ...chartData.map((g) => g.metricValue)))
   const labelWidth = Math.min(150, Math.max(40, ...chartData.map((g) => g.name.length * 7 + 12)))
   const barColor = (g: Group) => {
     if (metric === 'winRate') return c.electric
@@ -92,6 +95,7 @@ export function CrossingsPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
             Croisements
             <InfoTip text="Tes résultats découpés selon une colonne de Notion. Clique sur une barre pour filtrer toute l'application sur cette valeur (clique à nouveau pour retirer le filtre). Clique sur une ligne du tableau pour voir ses trades." />
           </h3>
+          <p className="panel-lede">Les résultats découpés selon chaque critère noté dans le journal.</p>
           {best && worst && best !== worst ? (
             <p className="muted">
               Meilleur : <strong>{label(best)}</strong>{' '}
@@ -162,11 +166,9 @@ export function CrossingsPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
                 stroke={c.muted}
                 tick={{ fill: c.muted, fontSize: 12 }}
                 tickLine={false}
-                // Le zéro reste toujours visible : une barre part de 0, jamais du milieu de l'axe.
-                domain={metric === 'winRate' ? [0, 1] : [(min: number) => Math.min(0, min), (max: number) => Math.max(0, max)]}
-                tickFormatter={(v: number) =>
-                  metric === 'winRate' ? formatPercent(v) : `${v.toLocaleString('fr-BE', { maximumFractionDigits: 1 })} R`
-                }
+                domain={metric === 'winRate' ? [0, 1] : [axis.ticks[0], axis.ticks.at(-1)!]}
+                ticks={metric === 'winRate' ? [0, 0.25, 0.5, 0.75, 1] : axis.ticks}
+                tickFormatter={(v: number) => (metric === 'winRate' ? formatPercent(v) : axisR(v, axis.decimals))}
               />
               <YAxis type="category" dataKey="name" width={labelWidth} stroke={c.muted} tick={{ fill: c.text, fontSize: 12 }} tickLine={false} axisLine={false} />
               {metric !== 'winRate' && <ReferenceLine x={0} stroke={c.muted} />}
@@ -184,13 +186,7 @@ export function CrossingsPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
                     />
                   )
                 })}
-                <LabelList
-                  dataKey="metricValue"
-                  position="right"
-                  fill={c.text}
-                  fontSize={12}
-                  formatter={(v: unknown) => formatMetric(Number(v), metric)}
-                />
+                <LabelList dataKey="metricValue" content={<BarValue metric={metric} color={c.text} />} />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -272,3 +268,34 @@ function GroupTooltip({
     </div>
   )
 }
+
+// Valeur d'une barre : au bout d'une barre positive ; à droite du zéro pour une barre négative,
+// pour ne jamais passer sur les noms de l'axe de gauche.
+function BarValue({
+  x,
+  y,
+  width,
+  height,
+  value,
+  metric,
+  color,
+}: {
+  x?: number | string
+  y?: number | string
+  width?: number | string
+  height?: number | string
+  value?: unknown
+  metric: Metric
+  color: string
+}) {
+  const left = Number(x)
+  const w = Number(width)
+  const v = Number(value)
+  const anchor = w >= 0 ? left + w : left
+  return (
+    <text x={anchor + 6} y={Number(y) + Number(height) / 2} dy="0.35em" fill={color} fontSize={12}>
+      {formatMetric(v, metric)}
+    </text>
+  )
+}
+

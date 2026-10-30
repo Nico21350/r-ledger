@@ -1,4 +1,4 @@
-import { useState, type Ref } from 'react'
+import { useState, type ReactNode, type Ref } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import {
@@ -18,6 +18,7 @@ import {
   YAxis,
 } from 'recharts'
 import type { Overview } from '../lib/stats'
+import { axisR } from '../lib/axis'
 import { formatDate, formatR, rClass, type Trade } from '../lib/trades'
 import { themeColors } from '../lib/theme'
 import { Segmented } from './Segmented'
@@ -78,13 +79,16 @@ export function EquityPanel({
     ...axis,
     axisLine: false,
     width: 52,
-    tickFormatter: (v: number) => `${v.toLocaleString('fr-BE', { maximumFractionDigits: 1 })} R`,
+    tickFormatter: (v: number) => axisR(v),
   }
   // Étiquette du sommet à gauche du point quand il est au bord droit, pour ne pas être coupée.
   const peakNearEnd = stats.peak !== null && stats.peak.index > range.end - 3
   // Point le plus bas de la plus forte baisse ; pas d'étiquette s'il est collé au bord gauche (elle chevaucherait l'axe).
   const troughPoint = stats.drawdownRange ? stats.curve[stats.drawdownRange.to - 1] : null
   const trough = troughPoint && troughPoint.index > range.start ? troughPoint : null
+  // Près d'un bord, l'étiquette part vers l'intérieur du graphique au lieu de déborder sur l'axe.
+  const troughShare = trough ? (trough.index - range.start) / Math.max(1, range.end - range.start) : 0.5
+  const troughSide = troughShare < 0.2 ? 'start' : troughShare > 0.8 ? 'end' : 'middle'
 
   return (
     <div className="panel equity-panel" ref={panelRef}>
@@ -242,10 +246,11 @@ export function EquityPanel({
                     r={0}
                     ifOverflow="discard"
                     label={{
-                      value: `Plus forte baisse ${formatR(stats.maxDrawdown)}`,
-                      position: 'bottom',
-                      fill: c.muted,
-                      fontSize: 12,
+                      content: ({ viewBox }) => (
+                        <PointLabel viewBox={viewBox} side={troughSide} fill={c.muted}>
+                          Plus forte baisse {formatR(stats.maxDrawdown)}
+                        </PointLabel>
+                      ),
                     }}
                   />
                 )}
@@ -354,3 +359,28 @@ function DrawdownTooltip({ active, payload }: { active?: boolean; payload?: { pa
     </div>
   )
 }
+
+// Étiquette sous un point de la courbe : centrée, ou partant vers l'intérieur quand le point est près d'un bord.
+function PointLabel({
+  viewBox,
+  side,
+  fill,
+  children,
+}: {
+  viewBox?: unknown
+  side: 'start' | 'middle' | 'end'
+  fill: string
+  children: ReactNode
+}) {
+  const box = viewBox as { x?: number; y?: number; width?: number; height?: number } | undefined
+  if (box?.x === undefined || box.y === undefined) return null
+  const x = box.x + (box.width ?? 0) / 2
+  const y = box.y + (box.height ?? 0) + 16
+  const anchor = side === 'start' ? 'start' : side === 'end' ? 'end' : 'middle'
+  return (
+    <text x={x + (side === 'start' ? -4 : side === 'end' ? 4 : 0)} y={y} textAnchor={anchor} fill={fill} fontSize={12}>
+      {children}
+    </text>
+  )
+}
+

@@ -486,7 +486,8 @@ kbd {
 }
 
 /* Valeur ni gain ni perte (win rate, nombre de trades…) : en mauve électrique plutôt qu'en blanc. */
-.overview-side .tile > strong:not(.gain, .loss) {
+.overview-side .tile > strong:not(.gain, .loss),
+.indicator-group .tile > strong:not(.gain, .loss) {
   color: var(--violet);
   text-shadow: 0 0 22px var(--violet-glow);
 }
@@ -842,6 +843,21 @@ kbd {
   background: var(--navy);
   border: 1px solid var(--navy-light);
   border-radius: 16px;
+}
+
+/* Petite phrase sous le titre d'un panneau : ce qu'il montre, en mots simples. */
+.panel-lede {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: #c99bff;
+}
+
+.indicator-group {
+  margin-top: 18px;
+}
+
+.indicator-group .mini-tiles {
+  margin-top: 10px;
 }
 
 .panel-header {
@@ -2550,25 +2566,6 @@ kbd {
   margin: 8px 0 0 52px;
 }
 
-/* Légende en forme de trait (courbe) ; pointillée pour une ligne de repère. */
-.legend-swatch.line {
-  width: 16px;
-  height: 2px;
-  border-radius: 1px;
-  opacity: 1;
-}
-
-.legend-swatch.line.dashed {
-  background: none !important;
-  border-top: 2px dashed currentColor;
-  height: 0;
-}
-
-.rolling-legend {
-  display: flex;
-  margin: 0 0 8px 52px;
-}
-
 .legend-swatch.round {
   border-radius: 50%;
   opacity: 0.85;
@@ -2619,6 +2616,24 @@ kbd {
 
 .be-row {
   grid-template-columns: minmax(150px, 1.2fr) 2fr auto 64px;
+}
+
+/* À côté d'un panneau plus haut, la liste occupe toute la hauteur : lignes plus aérées, barres plus épaisses. */
+.panel-fill .be-rows {
+  flex: 1;
+  justify-content: space-evenly;
+  gap: 10px;
+}
+
+.panel-fill .be-row {
+  flex: 1;
+  max-height: 72px;
+  font-size: 0.95rem;
+}
+
+.panel-fill .be-bar {
+  height: 12px;
+  border-radius: 6px;
 }
 
 .be-row strong {
@@ -2886,20 +2901,6 @@ kbd {
   line-height: 1.45;
 }
 
-.insight-action {
-  font-size: 0.78rem;
-  color: var(--electric-hover);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity 0.2s, transform 0.2s;
-}
-
-.insight:hover .insight-action,
-.insight:focus-visible .insight-action {
-  opacity: 1;
-  transform: none;
-}
-
 .export-buttons {
   display: inline-flex;
   gap: 6px;
@@ -3069,6 +3070,20 @@ main:focus {
     flex-wrap: wrap;
   }
 
+  /* Constats : une rangée qu'on fait glisser du doigt, la carte suivante dépasse sur le côté. */
+  .insight-list {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 85%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .insight-list .insight {
+    scroll-snap-align: start;
+  }
+
   /* Le choix de la colonne à croiser défile horizontalement sur une seule ligne. */
   .dim-chips {
     flex-wrap: nowrap;
@@ -3159,8 +3174,7 @@ main:focus {
   .range-slider,
   .chart-status button,
   .tile-action,
-  .toasts,
-  .insight-action {
+  .toasts {
     display: none !important;
   }
 

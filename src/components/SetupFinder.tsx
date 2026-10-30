@@ -76,6 +76,7 @@ export function SetupFinder({ trades, onOpen }: { trades: Trade[]; onOpen: (cont
             Chercheur de setups
             <InfoTip text="Choisis un ou plusieurs critères : les chiffres montrent ce que vaut la combinaison, comparée à tous tes trades. Le classement en dessous teste toutes les combinaisons d'un ou deux critères qui réunissent au moins 5 trades." />
           </h3>
+          <p className="panel-lede">Les combinaisons de critères qui donnent les meilleurs résultats.</p>
           <p className="muted">
             {criteria === 0
               ? 'Choisis des critères pour composer un setup.'

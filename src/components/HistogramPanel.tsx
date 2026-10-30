@@ -27,6 +27,7 @@ export function HistogramPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
   const total = rs.length
   // La position d'une ligne verticale doit tomber sur une colonne : on l'arrondit à la colonne la plus proche.
   const snap = (v: number) => Math.round(v / size) * size + 0 // + 0 : évite « −0 »
+  const medianFirst = med !== null && summary.avgR !== null && med <= summary.avgR
 
   return (
     <motion.section className="panel panel-fill" id="repartition" variants={riseIn}>
@@ -36,6 +37,7 @@ export function HistogramPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
             Répartition des R
             <InfoTip text="Chaque colonne compte les trades dont le résultat est proche de cette valeur. La médiane est le résultat du milieu : la moitié des trades fait mieux, l'autre moitié moins bien. Clique sur une colonne pour voir ses trades." />
           </h3>
+          <p className="panel-lede">Combien de trades finissent à chaque niveau de gain ou de perte.</p>
           <p className="muted">
             Médiane{' '}
             <strong className={med === null ? '' : rClass(med)}>{med === null ? '—' : formatR(med)}</strong> · espérance{' '}
@@ -80,12 +82,13 @@ export function HistogramPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
                 <Cell key={b.center} fill={b.center > 0 ? c.gain : b.center < 0 ? c.loss : c.muted} fillOpacity={0.85} />
               ))}
             </Bar>
+            {/* Étiquettes de part et d'autre : la ligne la plus à gauche a la sienne à gauche, l'autre à droite. */}
             {med !== null && (
               <ReferenceLine
                 x={snap(med)}
                 stroke={c.electric}
                 strokeDasharray="5 4"
-                label={{ value: 'Médiane', position: 'top', fill: c.electric, fontSize: 11 }}
+                label={{ value: 'Médiane', position: 'top', fill: c.electric, fontSize: 11, dx: medianFirst ? -28 : 28 }}
               />
             )}
             {summary.avgR !== null && snap(summary.avgR) !== (med === null ? null : snap(med)) && (
@@ -93,7 +96,7 @@ export function HistogramPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (c
                 x={snap(summary.avgR)}
                 stroke={c.violet}
                 strokeDasharray="5 4"
-                label={{ value: 'Espérance', position: 'top', fill: c.violet, fontSize: 11 }}
+                label={{ value: 'Espérance', position: 'top', fill: c.violet, fontSize: 11, dx: medianFirst ? 30 : -30 }}
               />
             )}
           </BarChart>

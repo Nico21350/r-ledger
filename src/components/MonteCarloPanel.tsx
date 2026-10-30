@@ -14,6 +14,7 @@ import {
   YAxis,
 } from 'recharts'
 import { riseIn, stagger } from '../lib/motion'
+import { axisR } from '../lib/axis'
 import { quantile, simulate, streakProbability, type Mode } from '../lib/montecarlo'
 import { themeColors } from '../lib/theme'
 import { formatPercent, formatR, rClass, type Trade } from '../lib/trades'
@@ -28,7 +29,7 @@ const MODES: { value: Mode; label: string }[] = [
   { value: 'tirage', label: 'Tirer au sort' },
 ]
 
-const axisR = (v: number) => `${v.toLocaleString('fr-BE', { maximumFractionDigits: 0 })} R`
+const axisR0 = (v: number) => axisR(v, 0)
 
 // 1 000 versions possibles de ton parcours : même trades dans un autre ordre, ou trades tirés au sort parmi les tiens.
 export function MonteCarloPanel({ trades }: { trades: Trade[] }) {
@@ -87,6 +88,7 @@ export function MonteCarloPanel({ trades }: { trades: Trade[] }) {
             Simulation de Monte-Carlo
             <InfoTip text="L'ordre de tes trades doit beaucoup au hasard. On rejoue tes R 1 000 fois : « Mélanger l'ordre » garde exactement tes trades et change seulement l'ordre (même total, baisses différentes) ; « Tirer au sort » pioche au hasard parmi tes résultats pour imaginer les prochains trades." />
           </h3>
+          <p className="panel-lede">Mille scénarios tirés des mêmes trades, pour voir ce qui aurait pu arriver.</p>
           <p className="muted">
             {mode === 'melange'
               ? `Tes ${rs.length} trades rejoués dans ${RUNS.toLocaleString('fr-BE')} ordres différents.`
@@ -156,7 +158,7 @@ export function MonteCarloPanel({ trades }: { trades: Trade[] }) {
               </defs>
               <CartesianGrid stroke={c.grid} strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="index" stroke={c.muted} tick={{ fill: c.muted, fontSize: 12 }} tickLine={false} />
-              <YAxis stroke={c.muted} tick={{ fill: c.muted, fontSize: 12 }} tickLine={false} axisLine={false} width={52} tickFormatter={axisR} />
+              <YAxis stroke={c.muted} tick={{ fill: c.muted, fontSize: 12 }} tickLine={false} axisLine={false} width={52} tickFormatter={axisR0} />
               <Tooltip content={<FanTooltip />} cursor={{ stroke: c.muted, strokeDasharray: '3 3' }} />
               <Area type="monotone" dataKey="outer" stroke="none" fill="url(#mc-outer)" animationDuration={800} />
               <Area type="monotone" dataKey="inner" stroke="none" fill={c.violet} fillOpacity={0.28} animationDuration={800} />

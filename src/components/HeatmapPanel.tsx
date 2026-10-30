@@ -47,6 +47,7 @@ export function HeatmapPanel({ trades, onOpen }: { trades: Trade[]; onOpen: (con
             Jour × {columns === 'session' ? 'session' : 'heure'}
             <InfoTip text="Chaque case réunit les trades d'un jour de la semaine et d'une session (ou d'une heure de Bruxelles). Vert : la case rapporte des R, rouge : elle en coûte, d'autant plus vif que la valeur est grande. Clique sur une case pour voir ses trades." />
           </h3>
+          <p className="panel-lede">Quels jours et quels moments de la journée rapportent le plus.</p>
           <p className="muted" aria-live="polite">
             {hovered ? (
               <>
