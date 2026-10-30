@@ -10,7 +10,8 @@ export function Segmented<T extends string | number>({
 }: {
   id: string // identifiant unique de la pastille animée
   label: string
-  options: { value: T; label: string }[]
+  // disabled : raison pour laquelle l'option n'est pas disponible (affichée au survol).
+  options: { value: T; label: string; disabled?: string }[]
   value: T | null
   onChange: (value: T) => void
 }) {
@@ -25,6 +26,8 @@ export function Segmented<T extends string | number>({
             role="radio"
             aria-checked={selected}
             className={selected ? 'active' : ''}
+            disabled={o.disabled !== undefined}
+            title={o.disabled}
             onClick={() => onChange(o.value)}
           >
             {selected && (

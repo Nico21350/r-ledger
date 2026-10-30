@@ -3,7 +3,8 @@ import { defineConfig, devices } from '@playwright/test'
 // Tests de bout en bout : un vrai navigateur ouvre l'application et clique comme un utilisateur.
 // L'application est lancée avec une fausse adresse Supabase (e2e.supabase.test) : toutes les réponses
 // viennent de e2e/fixtures.ts. Ni le vrai compte, ni la vraie base, ni Notion ne sont utilisés.
-const PORT = 5174
+// Port à part (5174 est celui que Vite prend quand 5173 est déjà occupé) ; modifiable avec E2E_PORT.
+const PORT = Number(process.env.E2E_PORT ?? 5199)
 
 export default defineConfig({
   testDir: './e2e',

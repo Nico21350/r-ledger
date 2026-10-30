@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'motion/react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { rollingStats, type CurvePoint, type RollingPoint } from '../lib/stats'
+import { niceTicks, rollingAvailable, rollingStats, type CurvePoint, type RollingPoint } from '../lib/stats'
 import { formatPercent, formatR, rClass } from '../lib/trades'
 import { themeColors } from '../lib/theme'
 import { Segmented } from './Segmented'
@@ -15,7 +15,7 @@ const METRICS: { value: Metric; label: string }[] = [
   { value: 'winRate', label: 'Win rate' },
 ]
 
-const WINDOWS = [5, 10, 20].map((n) => ({ value: n, label: `${n} trades` }))
+const WINDOWS = [5, 10, 20]
 
 // « Forme récente » : la stat recalculée à chaque trade sur les N derniers trades seulement.
 export function RollingPanel({
@@ -26,13 +26,29 @@ export function RollingPanel({
   overall: { expectancy: number | null; winRate: number | null }
 }) {
   const [metric, setMetric] = useState<Metric>('expectancy')
-  const [size, setSize] = useState(10)
+  const [chosen, setChosen] = useState(10)
+  // Fenêtre grisée s'il n'y a pas assez de trades ; si celle choisie l'est (filtre), on prend la plus grande possible.
+  const windows = WINDOWS.map((n) => ({
+    value: n,
+    label: `${n} trades`,
+    disabled: rollingAvailable(curve.length, n) ? undefined : `Il faut au moins ${n * 2} trades pour cette fenêtre`,
+  }))
+  const size = rollingAvailable(curve.length, chosen)
+    ? chosen
+    : (windows.filter((w) => !w.disabled).at(-1)?.value ?? WINDOWS[0])
   const points = useMemo(() => rollingStats(curve, size), [curve, size])
   const c = themeColors()
 
   const format = metric === 'expectancy' ? (v: number) => formatR(v) : formatPercent
   const reference = overall[metric]
   const last = points.at(-1)?.[metric]
+
+  // Graduations de l'axe de gauche (espérance) : rondes, et jamais deux fois le même libellé.
+  const axis = useMemo(() => {
+    const values = points.map((p) => p.expectancy)
+    if (overall.expectancy !== null) values.push(overall.expectancy)
+    return values.length ? niceTicks(Math.min(...values), Math.max(...values)) : null
+  }, [points, overall.expectancy])
 
   return (
     <motion.div className="panel" variants={riseIn}>
@@ -55,7 +71,7 @@ export function RollingPanel({
         </div>
         <div className="toolbar">
           <Segmented id="rolling-metric" label="Statistique" options={METRICS} value={metric} onChange={setMetric} />
-          <Segmented id="rolling-size" label="Nombre de trades" options={WINDOWS} value={size} onChange={setSize} />
+          <Segmented id="rolling-size" label="Nombre de trades" options={windows} value={size} onChange={setChosen} />
         </div>
       </div>
 
@@ -63,6 +79,12 @@ export function RollingPanel({
         <p className="muted">Il faut au moins {size} trades avec un RR closed pour cette vue.</p>
       ) : (
         <div className="chart" role="img" aria-label={`${metric === 'expectancy' ? 'Espérance' : 'Win rate'} glissant sur ${size} trades`}>
+          {reference !== null && (
+            <div className="legend chart-legend rolling-legend">
+              <span className="legend-swatch line" style={{ background: c.violet }} /> {size} derniers trades
+              <span className="legend-swatch line dashed" style={{ color: c.muted }} /> Moyenne de la période
+            </div>
+          )}
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={points} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
               <CartesianGrid stroke={c.grid} strokeDasharray="3 3" vertical={false} />
@@ -73,20 +95,17 @@ export function RollingPanel({
                 tickLine={false}
                 axisLine={false}
                 width={52}
-                domain={metric === 'winRate' ? [0, 1] : ['auto', 'auto']}
+                domain={metric === 'winRate' || !axis ? [0, 1] : [axis.ticks[0], axis.ticks.at(-1)!]}
+                ticks={metric === 'winRate' || !axis ? [0, 0.25, 0.5, 0.75, 1] : axis.ticks}
                 tickFormatter={
-                  metric === 'winRate'
+                  metric === 'winRate' || !axis
                     ? formatPercent
-                    : (v: number) => `${v.toLocaleString('fr-BE', { maximumFractionDigits: 1 })} R`
+                    : (v: number) =>
+                        `${v.toLocaleString('fr-BE', { minimumFractionDigits: axis.decimals, maximumFractionDigits: axis.decimals })} R`
                 }
               />
               {reference !== null && (
-                <ReferenceLine
-                  y={reference}
-                  stroke={c.muted}
-                  strokeDasharray="5 5"
-                  label={{ value: 'Moyenne de la période', position: 'insideTopRight', fill: c.muted, fontSize: 11 }}
-                />
+                <ReferenceLine y={reference} stroke={c.muted} strokeDasharray="5 5" />
               )}
               {metric === 'expectancy' && <ReferenceLine y={0} stroke={c.grid} />}
               <Tooltip
@@ -94,7 +113,7 @@ export function RollingPanel({
                 cursor={{ stroke: c.muted, strokeDasharray: '3 3' }}
               />
               <Line
-                type="monotone"
+                type="linear"
                 dataKey={metric}
                 stroke={c.violet}
                 strokeWidth={2}

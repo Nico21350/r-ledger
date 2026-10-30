@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { motion } from 'motion/react'
 import { useFilters } from '../hooks/useFilters'
 import type { DimensionKey } from '../lib/dimensions'
@@ -12,7 +12,8 @@ import { InfoTip } from './InfoTip'
 const ICONS: Record<Insight['tone'], string> = { gain: '▲', loss: '▼', neutral: '◆' }
 
 // Constats rédigés automatiquement ; un clic filtre sur le constat ou ouvre la bonne section des Analyses.
-export function InsightsPanel({ trades }: { trades: Trade[] }) {
+// compact : une seule ligne (point fort et point faible) et un lien vers tous les constats.
+export function InsightsPanel({ trades, compact = false }: { trades: Trade[]; compact?: boolean }) {
   const insights = useMemo(() => computeInsights(trades), [trades])
   const { filters, setFilters } = useFilters()
   const navigate = useNavigate()
@@ -29,8 +30,29 @@ export function InsightsPanel({ trades }: { trades: Trade[] }) {
     }
   }
 
+  if (compact) {
+    const pair = insights.filter((i) => i.short)
+    return (
+      <motion.section className="insight-strip" variants={riseIn} aria-label="Constats">
+        {pair.map((insight) => (
+          <button key={insight.id} type="button" className={`insight compact ${insight.tone}`} onClick={() => open(insight)}>
+            <span className="insight-icon" aria-hidden="true">
+              {ICONS[insight.tone]}
+            </span>
+            <span>
+              <strong>{insight.id === 'best' ? 'Point fort' : 'Point faible'}</strong> : {insight.short}
+            </span>
+          </button>
+        ))}
+        <Link className="see-all" to={{ pathname: '/analyses', search, hash: 'constats' }}>
+          Voir tous les constats →
+        </Link>
+      </motion.section>
+    )
+  }
+
   return (
-    <section className="insights">
+    <section className="insights" id="constats">
       <motion.h3 className="section-title" variants={riseIn}>
         Constats
         <InfoTip text="Rédigés automatiquement à partir des trades sélectionnés. Seuls les groupes d'au moins 5 trades sont pris en compte. Clique sur un constat pour filtrer sur lui ou voir le détail." />

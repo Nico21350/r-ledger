@@ -10,6 +10,8 @@ export type Insight = {
   tone: 'gain' | 'loss' | 'neutral'
   title: string
   text: string
+  // Version courte, pour la ligne de constats de la vue d'ensemble (point fort et point faible).
+  short?: string
   // Ce qu'un clic sur le constat permet de faire : filtrer, ou aller vers une section de l'écran Analyses.
   filter?: Setup
   section?: string
@@ -47,6 +49,7 @@ export function computeInsights(trades: Trade[], { runs = 500 }: { runs?: number
       tone: 'gain',
       title: 'Ton point fort',
       text: `Avec ${describe(best.key, best.value)}, tu fais ${formatR(best.avgR!)} par trade en moyenne (${plural(best.count, 'trade')}), contre ${formatR(all.avgR)} en général.`,
+      short: `${describe(best.key, best.value)} : ${formatR(best.avgR!)} par trade`,
       filter: { [best.key]: best.value },
     })
   }
@@ -56,6 +59,7 @@ export function computeInsights(trades: Trade[], { runs = 500 }: { runs?: number
       tone: worst.avgR! < 0 ? 'loss' : 'neutral',
       title: worst.avgR! < 0 ? 'Ce qui te coûte' : 'Ton point faible',
       text: `Avec ${describe(worst.key, worst.value)}, l'espérance tombe à ${formatR(worst.avgR!)} par trade (${plural(worst.count, 'trade')}).`,
+      short: `${describe(worst.key, worst.value)} : ${formatR(worst.avgR!)} par trade`,
       filter: { [worst.key]: worst.value },
     })
   }

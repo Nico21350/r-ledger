@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeOverview, rollingStats } from './stats'
+import { computeOverview, niceTicks, rollingAvailable, rollingStats } from './stats'
 import { makeTrade } from '../test/makeTrade'
 
 // Des trades aux R donnés, un par jour à partir du 1er mai.
@@ -109,5 +109,30 @@ describe('rollingStats', () => {
       { index: 4, expectancy: 2, winRate: 1 },
     ])
     expect(rollingStats(curve, 10)).toEqual([])
+  })
+})
+
+describe('niceTicks', () => {
+  it('donne des graduations rondes qui couvrent les valeurs', () => {
+    expect(niceTicks(-0.3, 1.7)).toEqual({ ticks: [-0.5, 0, 0.5, 1, 1.5, 2], decimals: 1 })
+  })
+
+  it('ajoute des décimales quand les valeurs sont proches : jamais deux libellés identiques', () => {
+    const { ticks, decimals } = niceTicks(1.36, 1.44)
+    const labels = ticks.map((t) => t.toFixed(decimals))
+    expect(new Set(labels).size).toBe(labels.length)
+    expect(ticks[0]).toBeLessThanOrEqual(1.36)
+    expect(ticks.at(-1)).toBeGreaterThanOrEqual(1.44)
+  })
+
+  it('gère une valeur unique', () => {
+    expect(niceTicks(1, 1).ticks.length).toBeGreaterThan(1)
+  })
+})
+
+describe('rollingAvailable', () => {
+  it('exige deux fois plus de trades que la fenêtre', () => {
+    expect(rollingAvailable(23, 10)).toBe(true)
+    expect(rollingAvailable(23, 20)).toBe(false)
   })
 })

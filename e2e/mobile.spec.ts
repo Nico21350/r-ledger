@@ -17,6 +17,26 @@ for (const path of ['/', '/analyses', '/galerie', '/trade/t11', '/comparer/t10/t
   })
 }
 
+// Chaque bulle d'explication « i » s'ouvre entièrement dans l'écran, même près des bords.
+for (const path of ['/', '/analyses']) {
+  test(`les bulles d'explication restent dans l'écran : ${path}`, async ({ page }) => {
+    await page.goto(path)
+    const icons = page.locator('.info-tip-icon')
+    await expect(icons.first()).toBeVisible()
+    const width = page.viewportSize()!.width
+    for (const icon of await icons.all()) {
+      await icon.focus()
+      const bubble = page.locator(`[id="${await icon.getAttribute('aria-describedby')}"]`)
+      await expect(bubble).toBeVisible()
+      await expect(bubble).toHaveCSS('opacity', '1')
+      const box = (await bubble.boundingBox())!
+      expect(box.x).toBeGreaterThanOrEqual(0)
+      expect(box.x + box.width).toBeLessThanOrEqual(width)
+      expect(box.y).toBeGreaterThanOrEqual(0)
+    }
+  })
+}
+
 test('la barre du haut garde ses boutons sur téléphone', async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('button', { name: 'Rechercher' })).toBeVisible()

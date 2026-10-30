@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test'
 import { mockSupabase, signIn } from './fixtures.ts'
 
+// Noms des cartes d'indicateurs, suivis du « i » de leur bulle d'explication.
+const labels = (...names: string[]) => names.map((n) => new RegExp(`^${n}i?$`))
+
 test.beforeEach(async ({ context }) => {
   await mockSupabase(context)
 })
@@ -16,12 +19,26 @@ test.describe('connecté', () => {
     await signIn(page)
   })
 
-  test("vue d'ensemble : total, cartes et constats", async ({ page }) => {
+  test("vue d'ensemble : total, constats sur une ligne, 5 indicateurs par défaut", async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('.hero-value')).toHaveText('+13 R')
     await expect(page.getByText('12 trades · 58 % gagnants')).toBeVisible() // 7 gains sur 12
+    await expect(page.getByText('1 R = le montant risqué sur un trade')).toBeVisible()
+    await expect(page.locator('.insight-strip')).toContainText('Point fort')
+    await expect(page.getByRole('link', { name: 'Voir tous les constats →' })).toBeVisible()
+    await expect(page.locator('.overview-side .tile-label')).toHaveText(labels('Espérance', 'Win rate', 'Plus forte baisse', 'SQN', 'Trades'))
     await expect(page.locator('.tile', { hasText: 'Win rate' })).toContainText('58 %')
-    await expect(page.getByRole('heading', { name: 'Constats' })).toBeVisible()
+    await expect(page.locator('.tile', { hasText: 'Win rate' })).toContainText('part des trades gagnants')
+  })
+
+  test('derniers trades : 4 cartes, du plus récent au plus ancien ; un clic ouvre la fiche', async ({ page }) => {
+    await page.goto('/')
+    const cards = page.locator('.recent-trade')
+    await expect(cards).toHaveCount(4)
+    await expect(cards.first()).toContainText('Pas de capture') // t12 n'a pas de capture
+    await expect(cards.first()).toContainText('−1 R')
+    await cards.nth(1).click() // t11
+    await expect(page).toHaveURL(/\/trade\/t11/)
   })
 
   // Règle du projet : tout est en R, aucun montant ne doit apparaître.
@@ -46,8 +63,18 @@ test.describe('connecté', () => {
     await expect(page).not.toHaveURL(/instrument=/)
   })
 
-  test('« Meilleur trade » ouvre la fiche, et les flèches du clavier changent de trade', async ({ page }) => {
+  test('Personnaliser : le choix des indicateurs est gardé ; « Meilleur trade » ouvre la fiche', async ({ page }) => {
     await page.goto('/')
+    await page.getByRole('button', { name: 'Personnaliser' }).click()
+    const picker = page.getByRole('dialog', { name: 'Indicateurs affichés' })
+    // 5 déjà choisis : les autres sont grisés tant qu'on n'en retire pas un.
+    await expect(picker.getByRole('button', { name: 'Meilleur trade' })).toBeDisabled()
+    await picker.getByRole('button', { name: 'Trades', exact: true }).click()
+    await picker.getByRole('button', { name: 'Meilleur trade' }).click()
+    await page.reload()
+    await expect(page.locator('.overview-side .tile-label')).toHaveText(
+      labels('Espérance', 'Win rate', 'Plus forte baisse', 'SQN', 'Meilleur trade'),
+    )
     await page.locator('.tile', { hasText: 'Meilleur trade' }).getByRole('button', { name: /Ouvrir la fiche/ }).click()
     await expect(page).toHaveURL(/\/trade\/t11/)
     await expect(page.locator('.trade-hero .hero-value')).toHaveText('+3,5 R')

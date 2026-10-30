@@ -61,7 +61,7 @@ export function Layout({ email }: { email: string }) {
       <header className="topbar">
         <div className="topbar-left">
           <span className="brand">
-            <span className="brand-mark" aria-hidden="true">R</span> Ledger
+            <span className="brand-mark" aria-hidden="true">R</span> <span className="brand-name">Ledger</span>
           </span>
           <nav className="nav">
             {NAV.map((item) => (
@@ -91,7 +91,8 @@ export function Layout({ email }: { email: string }) {
           <FilterMenu />
           {demo ? (
             <span className="demo-badge" title="Compte de démonstration : consultation uniquement, aucune modification ni synchronisation">
-              Mode démo · lecture seule
+              <span className="label">Mode démo · lecture seule</span>
+              <span className="short-label">Démo</span>
             </span>
           ) : (
           <button className="sync-button" onClick={runSync} disabled={sync.isPending} aria-label="Synchroniser avec Notion">

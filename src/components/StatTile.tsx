@@ -5,6 +5,7 @@ import { InfoTip } from './InfoTip'
 
 type Props = {
   label: string
+  hint?: string // quelques mots simples sous le nom
   value: number | null
   format: (v: number) => string
   info: string
@@ -21,6 +22,7 @@ type Props = {
 
 export function StatTile({
   label,
+  hint,
   value,
   format,
   info,
@@ -42,6 +44,7 @@ export function StatTile({
         {label}
         <InfoTip text={info} />
       </span>
+      {hint && <span className="tile-hint">{hint}</span>}
       <strong className={value !== null && tone ? tone(value) : ''}>
         {value === null ? '—' : <AnimatedNumber value={value} format={format} />}
       </strong>
